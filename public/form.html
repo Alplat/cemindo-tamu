@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulir Tamu - Cemindo</title>
+<style>
+  :root {
+    --merah: #C00000;
+    --bg-body: #F0F2F5;
+    --bg-card: #FFFFFF;
+    --bg-input: #FAFAFA;
+    --border: #E2E8F0;
+    --teks-utama: #333333;
+    --teks-label: #475569;
+  }
+
+  body.dark-mode {
+    --bg-body: #121212;
+    --bg-card: #1E1E1E;
+    --bg-input: #2D2D2D;
+    --border: #404040;
+    --teks-utama: #F1F1F1;
+    --teks-label: #A0A0A0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+
+  body { 
+    font-family: 'Segoe UI', system-ui, sans-serif; 
+    background: var(--bg-body); min-height: 100vh; padding: 20px; color: var(--teks-utama);
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+  
+  .theme-toggle {
+    position: fixed; top: 20px; right: 20px; background: var(--bg-card);
+    border: 2px solid var(--border); font-size: 20px; padding: 10px; border-radius: 50%;
+    cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.3s; z-index: 100;
+  }
+  .theme-toggle:hover { transform: scale(1.1); }
+
+  .container { 
+    max-width: 550px; margin: 20px auto; background: var(--bg-card); padding: 40px; 
+    border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+    animation: slideUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+    transition: background 0.4s ease;
+  }
+  
+  .header-form { text-align: center; margin-bottom: 30px; }
+  .header-form img { max-width: 130px; margin-bottom: 15px; }
+  .header-form h2 { color: var(--merah); font-size: 22px; font-weight: 800; }
+  
+  .form-group { margin-bottom: 20px; }
+  label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--teks-label); }
+  
+  input, select, textarea { 
+    width: 100%; padding: 14px; border: 2px solid var(--border); 
+    border-radius: 10px; font-family: inherit; font-size: 14px; color: var(--teks-utama);
+    transition: all 0.3s ease; background: var(--bg-input);
+  }
+  input:focus, select:focus, textarea:focus { 
+    border-color: var(--merah); background: var(--bg-card);
+    outline: none; box-shadow: 0 0 0 4px rgba(192,0,0,0.1); 
+  }
+
+  .foto-box { display: flex; gap: 15px; }
+  .foto-item { 
+    flex: 1; text-align: center; border: 2px dashed var(--border); padding: 20px; 
+    border-radius: 12px; cursor: pointer; background: var(--bg-input); 
+    transition: all 0.3s ease; position: relative; overflow: hidden;
+  }
+  .foto-item:hover { border-color: var(--merah); }
+  .foto-item img { 
+    width: 100%; height: 120px; object-fit: cover; display: none; 
+    border-radius: 8px; margin-bottom: 10px; animation: fadeIn 0.4s;
+  }
+  .foto-item span { font-size: 13px; color: var(--teks-label); font-weight: 600; display: block; }
+  
+  .btn-submit { 
+    width: 100%; background: var(--merah); color: #fff; border: none; 
+    padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 700; 
+    cursor: pointer; transition: all 0.3s; margin-top: 20px;
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+  }
+  .btn-submit:hover:not(:disabled) { background: #900000; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(192,0,0,0.2); }
+  .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+  
+  .spinner { 
+    display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); 
+    border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; 
+  }
+  .loading .spinner { display: block; }
+
+  .hidden { display: none !important; }
+  
+  .sukses-box { text-align: center; padding: 60px 20px; animation: popIn 0.6s forwards; }
+  .sukses-icon { font-size: 90px; line-height: 1; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+  <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+
+  <div class="container" id="formContainer">
+    <div class="header-form">
+      <img src="/logo.png" alt="Logo Cemindo">
+      <h2>Registrasi Tamu</h2>
+    </div>
+    
+    <div class="form-group">
+      <label>Nama Lengkap *</label>
+      <input type="text" id="nama" placeholder="Masukkan nama lengkap" required>
+    </div>
+
+    <div class="form-group">
+      <label>No ID Card / NIK *</label>
+      <input type="text" id="nik" placeholder="Masukkan NIK" required>
+    </div>
+
+    <div class="form-group">
+      <label>PIC yang Dituju *</label>
+      <input type="text" id="pic" placeholder="Contoh: Bpk. Budi" required>
+    </div>
+
+    <div class="form-group">
+      <label>Departemen *</label>
+      <select id="departemen">
+        <option value="">-- Pilih Departemen --</option>
+        <option value="HRD">HRD</option>
+        <option value="Produksi">Produksi</option>
+        <option value="IT">IT</option>
+        <option value="Finance">Finance</option>
+        <option value="Logistik">Logistik</option>
+        <option value="Lainnya">Lainnya</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Keperluan *</label>
+      <textarea id="keperluan" rows="3" placeholder="Contoh: Meeting, Interview, Kirim Barang"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Foto Selfie *</label>
+      <div class="foto-box">
+        <div class="foto-item" onclick="ambilFoto('selfie')">
+          <img id="preview_selfie">
+          <span id="text_selfie">📷 Ambil Selfie</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Foto KTP / ID Card *</label>
+      <div class="foto-box">
+        <div class="foto-item" onclick="ambilFoto('ktp')">
+          <img id="preview_ktp">
+          <span id="text_ktp">📷 Ambil KTP</span>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="simpanData()" id="btnSimpan" class="btn-submit">
+      <span id="btnText">Kirim Data Registrasi</span>
+      <div class="spinner"></div>
+    </button>
+  </div>
+
+  <!-- Tampilan Sukses -->
+  <div class="container sukses-box hidden" id="suksesContainer">
+    <div class="sukses-icon">✅</div>
+    <h2 style="margin-bottom:10px;">Registrasi Berhasil!</h2>
+    <p style="color:var(--teks-label); line-height:1.6; margin-bottom: 25px;">Terima kasih <b id="namaSukses"></b>.<br>Data Anda telah tersimpan. Silakan menuju resepsionis.</p>
+    <a href="/" style="display:inline-block; text-decoration:none; background:#C00000; color:#fff; padding:12px 30px; border-radius:8px; font-weight:bold;">Selesai</a>
+  </div>
+
+  <!-- Modal Kamera -->
+  <div id="kameraModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:99; animation: fadeIn 0.3s;">
+    <div style="background:var(--bg-card); padding:20px; border-radius:20px; text-align:center; width:90%; max-width:450px; animation: slideUp 0.4s;">
+      <h3 style="margin-bottom:15px; color:var(--merah);" id="titleKamera">Ambil Foto</h3>
+      <div style="position:relative; border-radius:12px; overflow:hidden; background:#000; border: 3px solid var(--border);">
+        <video id="video" autoplay playsinline style="width:100%; display:block;"></video>
+      </div>
+      <canvas id="canvas" style="display:none;"></canvas>
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button onclick="tutupKamera()" style="flex:1; background:var(--bg-input); color:var(--teks-utama); border:none; padding:14px; border-radius:10px; font-weight:bold; cursor:pointer;">Batal</button>
+        <button onclick="prosesFoto()" style="flex:1; background:var(--merah); color:#fff; border:none; padding:14px; border-radius:10px; font-weight:bold; cursor:pointer;">📸 Jepret</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // --- LOGIKA DARK MODE ---
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.getElementById('themeBtn').innerText = '☀️';
+  }
+  function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
+  }
+
+  // --- LOGIKA FORM ---
+  let fotoData = { selfie: null, ktp: null };
+  let modeFoto = '';
+  let stream = null;
+
+  async function ambilFoto(jenis) {
+    modeFoto = jenis;
+    document.getElementById('titleKamera').innerText = jenis === 'selfie' ? '🤳 Ambil Foto Selfie' : '🪪 Ambil Foto KTP';
+    document.getElementById('kameraModal').style.display = 'flex';
+    try {
+      const constraints = { video: { facingMode: jenis === 'selfie' ? 'user' : 'environment' } };
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      document.getElementById('video').srcObject = stream;
+    } catch (err) {
+      alert('Gagal akses kamera: ' + err.message + '\nPastikan menggunakan localhost atau HTTPS.');
+      tutupKamera();
+    }
+  }
+
+  function tutupKamera() {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    document.getElementById('kameraModal').style.display = 'none';
+  }
+
+  function prosesFoto() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    
+    const dataImage = canvas.toDataURL('image/jpeg', 0.8);
+    fotoData[modeFoto] = dataImage;
+    
+    document.getElementById('preview_' + modeFoto).src = dataImage;
+    document.getElementById('preview_' + modeFoto).style.display = 'block';
+    document.getElementById('text_' + modeFoto).innerText = '✅ Tersimpan';
+    document.getElementById('text_' + modeFoto).style.color = '#16A34A';
+
+    tutupKamera();
+  }
+
+  async function simpanData() {
+    const nama = document.getElementById('nama').value;
+    const nik = document.getElementById('nik').value;
+    const pic = document.getElementById('pic').value;
+    const departemen = document.getElementById('departemen').value;
+    const keperluan = document.getElementById('keperluan').value;
+
+    if (!nama || !nik || !pic || !departemen || !keperluan) {
+      return alert('Mohon lengkapi semua data teks!');
+    }
+    if (!fotoData.selfie || !fotoData.ktp) {
+      return alert('Mohon ambil Foto Selfie dan Foto KTP!');
+    }
+
+    const btn = document.getElementById('btnSimpan');
+    btn.disabled = true;
+    btn.classList.add('loading');
+    document.getElementById('btnText').innerText = 'Menyimpan Data...';
+
+    try {
+      const res = await fetch('/api/simpan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nama, nik, pic, departemen, keperluan, foto_selfie: fotoData.selfie, foto_ktp: fotoData.ktp })
+      });
+
+      if (res.ok) {
+        document.getElementById('formContainer').classList.add('hidden');
+        document.getElementById('suksesContainer').classList.remove('hidden');
+        document.getElementById('namaSukses').innerText = nama;
+      } else {
+        alert('Gagal menyimpan data.');
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        document.getElementById('btnText').innerText = 'Kirim Data Registrasi';
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      document.getElementById('btnText').innerText = 'Kirim Data Registrasi';
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selamat Datang - PT Cemindo Gemilang</title>
+<style>
+  :root {
+    --merah: #C00000;
+    --merah-hover: #900000;
+    --bg-body: #F0F2F5;
+    --bg-box: #FFFFFF;
+    --teks-utama: #333333;
+    --teks-sub: #777777;
+    --info-bg: #F9F9F9;
+  }
+
+  /* VARIABEL UNTUK MODE GELAP */
+  body.dark-mode {
+    --bg-body: #121212;
+    --bg-box: #1E1E1E;
+    --teks-utama: #F1F1F1;
+    --teks-sub: #A0A0A0;
+    --info-bg: #2D2D2D;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0px); }
+  }
+  @keyframes pulseRing {
+    0% { box-shadow: 0 0 0 0 rgba(192, 0, 0, 0.5); }
+    70% { box-shadow: 0 0 0 20px rgba(192, 0, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(192, 0, 0, 0); }
+  }
+
+  body { 
+    font-family: 'Segoe UI', system-ui, sans-serif; 
+    background: var(--bg-body);
+    min-height: 100vh; display: flex; justify-content: center; align-items: center;
+    padding: 20px; color: var(--teks-utama);
+    transition: background 0.4s ease, color 0.4s ease; /* Transisi halus saat ganti tema */
+  }
+  
+  /* Tombol Toggle Dark Mode */
+  .theme-toggle {
+    position: fixed; top: 20px; right: 20px; background: var(--bg-box);
+    border: none; font-size: 24px; padding: 10px; border-radius: 50%;
+    cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: 0.3s; z-index: 100;
+  }
+  .theme-toggle:hover { transform: scale(1.1); }
+
+  .box { 
+    background: var(--bg-box); padding: 50px 40px; border-radius: 24px; 
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08); 
+    max-width: 480px; width: 100%; text-align: center;
+    animation: fadeInUp 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+    transition: background 0.4s ease;
+  }
+  
+  .logo-img { 
+    max-width: 180px; margin-bottom: 25px; 
+    animation: float 4s ease-in-out infinite;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+  }
+  
+  .title { font-size: 24px; font-weight: 800; color: var(--teks-utama); margin-bottom: 5px; }
+  .sub { 
+    color: var(--teks-sub); font-size: 14px; margin-bottom: 40px; 
+    text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
+  }
+  
+  .btn { 
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+    background: var(--merah); color: white; padding: 18px 24px; 
+    text-decoration: none; border-radius: 14px; font-weight: 700; 
+    font-size: 18px; transition: all 0.3s ease; 
+    animation: pulseRing 2.5s infinite;
+  }
+  
+  .btn:hover { 
+    background: var(--merah-hover); transform: translateY(-4px); 
+    box-shadow: 0 15px 25px rgba(192,0,0,0.3);
+  }
+  
+  .info { 
+    margin-top: 30px; font-size: 13px; color: var(--teks-sub); line-height: 1.6; 
+    padding: 15px; background: var(--info-bg); border-radius: 10px;
+    transition: background 0.4s ease;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Tombol Dark Mode -->
+  <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+
+  <div class="box">
+    <img src="/logo.png" alt="Logo Cemindo" class="logo-img">
+    <div class="title">Guest Registration</div>
+    <div class="sub">PT. Cemindo Gemilang - Batam</div>
+    
+    <a href="/input" class="btn">MASUK </a>
+    
+    <div class="info">Silakan scan ID Card Anda atau klik tombol di atas untuk memulai registrasi tamu.</div>
+  </div>
+
+<script>
+  // Cek memori browser, apakah sebelumnya user memilih dark mode
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.getElementById('themeBtn').innerText = '☀️';
+  }
+
+  function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    
+    // Simpan pilihan ke memori browser
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    
+    // Ganti icon tombol
+    document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
+  }
+</script>
+</body>
+</html>
