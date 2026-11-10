@@ -206,7 +206,6 @@
     if(document.getElementById('themeBtnLogin')) document.getElementById('themeBtnLogin').innerText = text;
     if(document.getElementById('themeBtnAdmin')) document.getElementById('themeBtnAdmin').innerText = text;
     
-    // Ganti warna tombol di halaman login agar terlihat jika background terang
     if(!isDark && document.getElementById('themeBtnLogin')) {
         document.getElementById('themeBtnLogin').style.color = '#333';
     } else if(document.getElementById('themeBtnLogin')) {
@@ -294,6 +293,7 @@
 
     data.forEach((row, index) => {
       const tr = document.createElement('tr');
+      // PERHATIKAN BAGIAN FOTO DI BAWAH INI: /uploads/ SUDAH DIHAPUS
       tr.innerHTML = `
         <td>${index + 1}</td>
         <td><b>${row.tanggal}</b><br><small style="color:var(--teks-sub)">${row.hari}</small></td>
@@ -302,8 +302,8 @@
         <td><span style="color:var(--merah); font-weight:700;">${row.pic}</span><br><small style="color:var(--teks-sub)">${row.departemen}</small></td>
         <td>${row.keperluan}</td>
         <td>
-          ${row.foto_selfie ? `<img src="/uploads/${row.foto_selfie}" class="foto-tamu" onclick="lihatFoto(this.src)" title="Foto Selfie">` : '-'}
-          ${row.foto_ktp ? `<img src="/uploads/${row.foto_ktp}" class="foto-tamu" onclick="lihatFoto(this.src)" title="Foto KTP" style="margin-left:8px">` : ''}
+          ${row.foto_selfie ? `<img src="${row.foto_selfie}" class="foto-tamu" onclick="lihatFoto(this.src)" title="Foto Selfie">` : '-'}
+          ${row.foto_ktp ? `<img src="${row.foto_ktp}" class="foto-tamu" onclick="lihatFoto(this.src)" title="Foto KTP" style="margin-left:8px">` : ''}
         </td>
       `;
       tbody.appendChild(tr);
