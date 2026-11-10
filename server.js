@@ -1,20 +1,17 @@
-require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const ExcelJS = require('exceljs');
-const cloudinary = require('cloudinary').v2;
 const db = require('./database');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Konfigurasi Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Pastikan folder uploads ada
+if (!fs.existsSync('public/uploads')) {
+  fs.mkdirSync('public/uploads', { recursive: true });
+}
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -24,48 +21,41 @@ app.use(session({
   saveUninitialized: true
 }));
 
-// Set folder public sebagai halaman web
 app.use(express.static('public'));
 
 // ==========================================
 // API UNTUK TAMU (PUBLIK)
 // ==========================================
-app.post('/api/simpan', async (req, res) => {
+app.post('/api/simpan', (req, res) => {
   try {
     const { nama, nik, pic, departemen, keperluan, foto_selfie, foto_ktp } = req.body;
     
-    let urlSelfie = '';
-    let urlKtp = '';
+    let fileNameSelfie = '';
+    let fileNameKtp = '';
 
-    // Upload Foto Selfie ke Cloudinary
+    // Simpan foto base64 ke file fisik
     if (foto_selfie && foto_selfie.startsWith('data:image')) {
-      const uploadRes = await cloudinary.uploader.upload(foto_selfie, { 
-        folder: 'cemindo_tamu',
-        resource_type: 'image'
-      });
-      urlSelfie = uploadRes.secure_url; // Mengambil link https://...
+      fileNameSelfie = `selfie_${Date.now()}.jpg`;
+      const base64Data = foto_selfie.replace(/^data:image\/\w+;base64,/, "");
+      fs.writeFileSync(`public/uploads/${fileNameSelfie}`, base64Data, 'base64');
     }
 
-    // Upload Foto KTP ke Cloudinary
     if (foto_ktp && foto_ktp.startsWith('data:image')) {
-      const uploadRes = await cloudinary.uploader.upload(foto_ktp, { 
-        folder: 'cemindo_tamu',
-        resource_type: 'image'
-      });
-      urlKtp = uploadRes.secure_url;
+      fileNameKtp = `ktp_${Date.now()}.jpg`;
+      const base64Data = foto_ktp.replace(/^data:image\/\w+;base64,/, "");
+      fs.writeFileSync(`public/uploads/${fileNameKtp}`, base64Data, 'base64');
     }
 
-    // Ambil tanggal dan hari
     const now = new Date();
     const tanggal = now.toISOString().split('T')[0];
     const hari = now.toLocaleDateString('id-ID', { weekday: 'long' });
 
-    // Simpan ke database Turso
-    await db.execute({
-      sql: `INSERT INTO tamu (tanggal, hari, nama, nik, pic, departemen, keperluan, foto_selfie, foto_ktp) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [tanggal, hari, nama, nik, pic, departemen, keperluan, urlSelfie, urlKtp]
-    });
+    // Simpan ke database SQLite LOKAL
+    const stmt = db.prepare(`
+      INSERT INTO tamu (tanggal, hari, nama, nik, pic, departemen, keperluan, foto_selfie, foto_ktp)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    stmt.run(tanggal, hari, nama, nik, pic, departemen, keperluan, fileNameSelfie, fileNameKtp);
 
     res.json({ success: true });
   } catch (error) {
@@ -97,25 +87,25 @@ app.post('/api/logout', (req, res) => {
   res.json({ success: true });
 });
 
-// Ambil Data (Filter Tanggal / Bulan)
-app.get('/api/data', cekLogin, async (req, res) => {
+// Ambil Data
+app.get('/api/data', cekLogin, (req, res) => {
   try {
     const { filter_type, bulan, tanggal } = req.query;
     let query = 'SELECT * FROM tamu';
-    let args = [];
+    let params = [];
 
     if (filter_type === 'bulan' && bulan) {
       query += " WHERE strftime('%Y-%m', tanggal) = ?";
-      args.push(bulan);
+      params.push(bulan);
     } else if (filter_type === 'tanggal' && tanggal) {
       query += ' WHERE tanggal = ?';
-      args.push(tanggal);
+      params.push(tanggal);
     }
 
     query += ' ORDER BY created_at DESC';
     
-    const result = await db.execute({ sql: query, args: args });
-    res.json(result.rows);
+    const data = db.prepare(query).all(...params);
+    res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -126,22 +116,21 @@ app.get('/api/export', cekLogin, async (req, res) => {
   try {
     const { filter_type, bulan, tanggal } = req.query;
     let query = 'SELECT * FROM tamu';
-    let args = [];
+    let params = [];
     let namaFile = 'Laporan_Semua.xlsx';
 
     if (filter_type === 'bulan' && bulan) {
       query += " WHERE strftime('%Y-%m', tanggal) = ?";
-      args.push(bulan);
+      params.push(bulan);
       namaFile = `Laporan_Bulan_${bulan}.xlsx`;
     } else if (filter_type === 'tanggal' && tanggal) {
       query += ' WHERE tanggal = ?';
-      args.push(tanggal);
+      params.push(tanggal);
       namaFile = `Laporan_Tanggal_${tanggal}.xlsx`;
     }
 
     query += ' ORDER BY created_at DESC';
-    const result = await db.execute({ sql: query, args: args });
-    const data = result.rows;
+    const data = db.prepare(query).all(...params);
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Data Tamu');
@@ -158,7 +147,6 @@ app.get('/api/export', cekLogin, async (req, res) => {
       { header: 'Waktu Input', key: 'created_at', width: 20 }
     ];
 
-    // Styling Header
     worksheet.getRow(1).eachCell((cell) => {
       cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC00000' } };
@@ -194,5 +182,5 @@ app.get('/input', (req, res) => res.sendFile(path.join(__dirname, 'public', 'for
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
 app.listen(PORT, () => {
-  console.log(`✅ Server berjalan di http://localhost:${PORT}`);
+  console.log(`✅ Server berjalan di port ${PORT}`);
 });
