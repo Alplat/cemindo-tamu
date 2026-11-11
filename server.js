@@ -87,7 +87,7 @@ app.post('/api/logout', (req, res) => {
   res.json({ success: true });
 });
 
-// Ambil Data (Filter Tanggal / Bulan)
+// Ambil Data
 app.get('/api/data', cekLogin, (req, res) => {
   try {
     const { filter_type, bulan, tanggal } = req.query;
@@ -116,28 +116,13 @@ app.get('/api/data', cekLogin, (req, res) => {
 // ==========================================
 app.get('/api/stats', cekLogin, (req, res) => {
   try {
-    // 1. Data Tamu 7 Hari Terakhir
-    const queryHarian = `
-      SELECT tanggal, COUNT(*) as jumlah 
-      FROM tamu 
-      GROUP BY tanggal 
-      ORDER BY tanggal DESC 
-      LIMIT 7
-    `;
+    const queryHarian = `SELECT tanggal, COUNT(*) as jumlah FROM tamu GROUP BY tanggal ORDER BY tanggal DESC LIMIT 7`;
     const dataHarian = db.prepare(queryHarian).all().reverse(); 
 
-    // 2. Data Per Departemen
-    const queryDept = `
-      SELECT departemen, COUNT(*) as jumlah 
-      FROM tamu 
-      GROUP BY departemen
-    `;
+    const queryDept = `SELECT departemen, COUNT(*) as jumlah FROM tamu GROUP BY departemen`;
     const dataDept = db.prepare(queryDept).all();
 
-    res.json({
-      harian: dataHarian,
-      departemen: dataDept
-    });
+    res.json({ harian: dataHarian, departemen: dataDept });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -168,14 +153,10 @@ app.get('/api/export', cekLogin, async (req, res) => {
     const worksheet = workbook.addWorksheet('Data Tamu');
 
     worksheet.columns = [
-      { header: 'No', key: 'no', width: 5 },
-      { header: 'Tanggal', key: 'tanggal', width: 15 },
-      { header: 'Hari', key: 'hari', width: 10 },
-      { header: 'Nama Tamu', key: 'nama', width: 25 },
-      { header: 'No ID Card / NIK', key: 'nik', width: 20 },
-      { header: 'PIC yang Dituju', key: 'pic', width: 20 },
-      { header: 'Departemen', key: 'departemen', width: 20 },
-      { header: 'Keperluan', key: 'keperluan', width: 30 },
+      { header: 'No', key: 'no', width: 5 }, { header: 'Tanggal', key: 'tanggal', width: 15 },
+      { header: 'Hari', key: 'hari', width: 10 }, { header: 'Nama Tamu', key: 'nama', width: 25 },
+      { header: 'No ID / NIK', key: 'nik', width: 20 }, { header: 'PIC', key: 'pic', width: 20 },
+      { header: 'Departemen', key: 'departemen', width: 20 }, { header: 'Keperluan', key: 'keperluan', width: 30 },
       { header: 'Waktu Input', key: 'created_at', width: 20 }
     ];
 
@@ -187,14 +168,8 @@ app.get('/api/export', cekLogin, async (req, res) => {
 
     data.forEach((row, index) => {
       worksheet.addRow({
-        no: index + 1,
-        tanggal: row.tanggal,
-        hari: row.hari,
-        nama: row.nama,
-        nik: row.nik,
-        pic: row.pic,
-        departemen: row.departemen,
-        keperluan: row.keperluan,
+        no: index + 1, tanggal: row.tanggal, hari: row.hari, nama: row.nama, nik: row.nik,
+        pic: row.pic, departemen: row.departemen, keperluan: row.keperluan,
         created_at: new Date(row.created_at).toLocaleString('id-ID')
       });
     });
