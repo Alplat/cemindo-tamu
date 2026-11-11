@@ -98,8 +98,59 @@
 
   .hidden { display: none !important; }
   
+  /* Tampilan Sukses */
   .sukses-box { text-align: center; padding: 60px 20px; animation: popIn 0.6s forwards; }
   .sukses-icon { font-size: 90px; line-height: 1; margin-bottom: 20px; }
+  .btn-print { 
+    background: var(--merah); color: #fff; border: none; padding: 12px 30px; 
+    border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 15px;
+    display: inline-flex; align-items: center; gap: 8px; transition: 0.3s;
+  }
+  .btn-print:hover { background: #900000; transform: translateY(-2px); }
+
+  /* =========================================
+     DESAIN VISITOR BADGE (Hanya muncul saat print)
+     ========================================= */
+  #badgeArea { display: none; } /* Tersembunyi di layar */
+
+  @media print {
+    /* Sembunyikan semua elemen web */
+    body * { visibility: hidden; }
+    body { background: white; padding: 0; margin: 0; }
+    
+    /* Tampilkan hanya area badge */
+    #badgeArea, #badgeArea * { visibility: visible; }
+    #badgeArea { 
+      display: block !important; position: absolute; left: 0; top: 0; 
+      width: 10cm; height: 14cm; /* Ukuran standar badge */
+      background: white; color: #333; font-family: 'Segoe UI', sans-serif;
+      border: 2px solid #C00000; border-radius: 15px; box-sizing: border-box;
+      padding: 20px; text-align: center;
+    }
+
+    /* Desain dalam Badge */
+    .badge-header { border-bottom: 2px solid #C00000; padding-bottom: 10px; margin-bottom: 15px; }
+    .badge-header img { height: 40px; margin-bottom: 5px; }
+    .badge-header h2 { font-size: 16px; color: #C00000; margin: 0; letter-spacing: 1px; }
+    .badge-header p { font-size: 10px; margin: 0; color: #666; text-transform: uppercase; }
+    
+    .badge-foto { 
+      width: 100px; height: 100px; border-radius: 50%; object-fit: cover; 
+      border: 3px solid #C00000; margin: 0 auto 10px auto; display: block;
+    }
+    
+    .badge-nama { font-size: 22px; font-weight: 800; margin-bottom: 5px; color: #1E293B; }
+    .badge-perusahaan { font-size: 14px; color: #666; margin-bottom: 20px; }
+    
+    .badge-detail { text-align: left; background: #F8FAFC; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+    .badge-detail table { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .badge-detail td { padding: 5px 0; border-bottom: 1px dashed #ccc; }
+    .badge-detail td:first-child { color: #666; width: 40%; }
+    .badge-detail td:last-child { font-weight: bold; color: #333; }
+    .badge-detail tr:last-child td { border-bottom: none; }
+    
+    .badge-footer { font-size: 9px; color: #999; position: absolute; bottom: 15px; left: 0; width: 100%; text-align: center; }
+  }
 </style>
 </head>
 <body>
@@ -116,17 +167,14 @@
       <label>Nama Lengkap *</label>
       <input type="text" id="nama" placeholder="Masukkan nama lengkap" required>
     </div>
-
     <div class="form-group">
       <label>No ID Card / NIK *</label>
       <input type="text" id="nik" placeholder="Masukkan NIK" required>
     </div>
-
     <div class="form-group">
       <label>PIC yang Dituju *</label>
       <input type="text" id="pic" placeholder="Contoh: Bpk. Budi" required>
     </div>
-
     <div class="form-group">
       <label>Departemen *</label>
       <select id="departemen">
@@ -139,12 +187,11 @@
         <option value="Lainnya">Lainnya</option>
       </select>
     </div>
-
     <div class="form-group">
       <label>Keperluan *</label>
       <textarea id="keperluan" rows="3" placeholder="Contoh: Meeting, Interview, Kirim Barang"></textarea>
     </div>
-
+    
     <div class="form-group">
       <label>Foto Selfie *</label>
       <div class="foto-box">
@@ -154,7 +201,6 @@
         </div>
       </div>
     </div>
-
     <div class="form-group">
       <label>Foto KTP / ID Card *</label>
       <div class="foto-box">
@@ -164,7 +210,6 @@
         </div>
       </div>
     </div>
-
     <button onclick="simpanData()" id="btnSimpan" class="btn-submit">
       <span id="btnText">Kirim Data Registrasi</span>
       <div class="spinner"></div>
@@ -175,8 +220,41 @@
   <div class="container sukses-box hidden" id="suksesContainer">
     <div class="sukses-icon">✅</div>
     <h2 style="margin-bottom:10px;">Registrasi Berhasil!</h2>
-    <p style="color:var(--teks-label); line-height:1.6; margin-bottom: 25px;">Terima kasih <b id="namaSukses"></b>.<br>Data Anda telah tersimpan. Silakan menuju resepsionis.</p>
-    <a href="/" style="display:inline-block; text-decoration:none; background:#C00000; color:#fff; padding:12px 30px; border-radius:8px; font-weight:bold;">Selesai</a>
+    <p style="color:var(--teks-label); line-height:1.6; margin-bottom: 20px;">Terima kasih <b id="namaSukses"></b>.<br>Silakan cetak kartu tamu Anda.</p>
+    
+    <button class="btn-print" onclick="window.print()">
+      🖨️ Cetak Visitor Badge
+    </button>
+    <br>
+    <a href="/" style="display:inline-block; margin-top:15px; color:var(--teks-label); text-decoration:none; font-size:13px;">Kembali ke Halaman Depan</a>
+  </div>
+
+  <!-- =========================================
+       AREA CETAK BADGE (Hanya terlihat saat print)
+       ========================================= -->
+  <div id="badgeArea">
+    <div class="badge-header">
+      <img src="/logo.png" alt="Logo">
+      <h2>PT. CEMINDO GEMILANG</h2>
+      <p>Batam - Indonesia</p>
+    </div>
+    
+    <img id="badgeFoto" class="badge-foto" src="" alt="Foto Tamu">
+    
+    <div class="badge-nama" id="badgeNama">Nama Tamu</div>
+    <div class="badge-perusahaan" id="badgePerusahaan">Perusahaan / Instansi</div>
+    
+    <div class="badge-detail">
+      <table>
+        <tr><td>Tujuan (PIC)</td><td id="badgePic">-</td></tr>
+        <tr><td>Departemen</td><td id="badgeDept">-</td></tr>
+        <tr><td>Tanggal Masuk</td><td id="badgeTanggal">-</td></tr>
+      </table>
+    </div>
+    
+    <div class="badge-footer">
+      Kartu ini wajib dipakai selama berada di area PT. Cemindo Gemilang.
+    </div>
   </div>
 
   <!-- Modal Kamera -->
@@ -279,6 +357,15 @@
         document.getElementById('formContainer').classList.add('hidden');
         document.getElementById('suksesContainer').classList.remove('hidden');
         document.getElementById('namaSukses').innerText = nama;
+
+        // --- ISI DATA UNTUK BADGE ---
+        document.getElementById('badgeFoto').src = fotoData.selfie;
+        document.getElementById('badgeNama').innerText = nama;
+        document.getElementById('badgePic').innerText = pic;
+        document.getElementById('badgeDept').innerText = departemen;
+        
+        const today = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        document.getElementById('badgeTanggal').innerText = today;
       } else {
         alert('Gagal menyimpan data.');
         btn.disabled = false;
