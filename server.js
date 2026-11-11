@@ -87,7 +87,7 @@ app.post('/api/logout', (req, res) => {
   res.json({ success: true });
 });
 
-// Ambil Data
+// Ambil Data (Filter Tanggal / Bulan)
 app.get('/api/data', cekLogin, (req, res) => {
   try {
     const { filter_type, bulan, tanggal } = req.query;
@@ -106,6 +106,38 @@ app.get('/api/data', cekLogin, (req, res) => {
     
     const data = db.prepare(query).all(...params);
     res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================
+// API STATISTIK UNTUK GRAFIK
+// ==========================================
+app.get('/api/stats', cekLogin, (req, res) => {
+  try {
+    // 1. Data Tamu 7 Hari Terakhir
+    const queryHarian = `
+      SELECT tanggal, COUNT(*) as jumlah 
+      FROM tamu 
+      GROUP BY tanggal 
+      ORDER BY tanggal DESC 
+      LIMIT 7
+    `;
+    const dataHarian = db.prepare(queryHarian).all().reverse(); 
+
+    // 2. Data Per Departemen
+    const queryDept = `
+      SELECT departemen, COUNT(*) as jumlah 
+      FROM tamu 
+      GROUP BY departemen
+    `;
+    const dataDept = db.prepare(queryDept).all();
+
+    res.json({
+      harian: dataHarian,
+      departemen: dataDept
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

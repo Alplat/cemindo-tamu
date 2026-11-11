@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard - Cemindo</title>
+<!-- Library Chart.js untuk Grafik -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root {
     --merah: #C00000;
@@ -84,6 +86,18 @@
   .login-box button:hover { background:var(--merah-hover); transform: translateY(-2px); }
 
   /* Dashboard Elements */
+  .chart-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: 20px; margin-bottom: 25px; animation: slideUp 0.5s ease-out;
+  }
+  .chart-card {
+    background: var(--bg-card); padding: 20px; border-radius: 12px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: background 0.4s ease;
+  }
+  .chart-card h3 {
+    font-size: 14px; color: var(--teks-sub); margin-bottom: 15px; text-align: center; font-weight: 600;
+  }
+
   .filter-box { 
     background:var(--bg-card); padding:20px; border-radius:12px; margin-bottom:25px; 
     display:flex; gap:15px; align-items:center; flex-wrap:wrap; 
@@ -159,6 +173,19 @@
   </div>
   
   <div class="container">
+    
+    <!-- DASHBOARD GRAFIK -->
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>Tamu 7 Hari Terakhir</h3>
+        <canvas id="chartHarian"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Tujuan Departemen</h3>
+        <canvas id="chartDepartemen"></canvas>
+      </div>
+    </div>
+
     <div class="filter-box">
       <label style="font-weight:bold; font-size:14px;">Filter Data:</label>
       <select id="filterType" onchange="toggleFilter()">
@@ -211,6 +238,10 @@
     } else if(document.getElementById('themeBtnLogin')) {
         document.getElementById('themeBtnLogin').style.color = '#fff';
     }
+    // Reload grafik agar warnanya menyesuaikan tema
+    if (!document.getElementById('dashboardSection').classList.contains('hidden')) {
+      loadCharts();
+    }
   }
 
   if (localStorage.getItem('theme') === 'dark') {
@@ -234,6 +265,7 @@
       document.getElementById('loginSection').classList.add('hidden');
       document.getElementById('dashboardSection').classList.remove('hidden');
       loadData();
+      loadCharts();
     }
   }
 
@@ -251,6 +283,7 @@
       document.getElementById('loginSection').classList.add('hidden');
       document.getElementById('dashboardSection').classList.remove('hidden');
       loadData();
+      loadCharts();
     } else {
       alert('Username atau Password salah!');
     }
@@ -293,7 +326,6 @@
 
     data.forEach((row, index) => {
       const tr = document.createElement('tr');
-      // MENGGUNAKAN /uploads/ KARENA KEMBALI KE PENYIMPANAN LOKAL
       tr.innerHTML = `
         <td>${index + 1}</td>
         <td><b>${row.tanggal}</b><br><small style="color:var(--teks-sub)">${row.hari}</small></td>
@@ -320,6 +352,81 @@
     const bulan = document.getElementById('inputBulan').value;
     const tanggal = document.getElementById('inputTanggal').value;
     window.location.href = `/api/export?filter_type=${type}&bulan=${bulan}&tanggal=${tanggal}`;
+  }
+
+  // --- LOGIKA GRAFIK CHART.JS ---
+  let myChartHarian = null;
+  let myChartDept = null;
+
+  async function loadCharts() {
+    try {
+      const res = await fetch('/api/stats');
+      if (!res.ok) return; // Hentikan jika belum login
+      
+      const data = await res.json();
+      const isDark = document.body.classList.contains('dark-mode');
+      const textColor = isDark ? '#A0A0A0' : '#475569';
+      const gridColor = isDark ? '#404040' : '#E2E8F0';
+
+      // 1. Grafik Harian (Bar)
+      const ctxHarian = document.getElementById('chartHarian').getContext('2d');
+      if (myChartHarian) myChartHarian.destroy(); // Hapus chart lama
+
+      myChartHarian = new Chart(ctxHarian, {
+        type: 'bar',
+        data: {
+          labels: data.harian.map(d => d.tanggal),
+          datasets: [{
+            label: 'Jumlah Tamu',
+            data: data.harian.map(d => d.jumlah),
+            backgroundColor: '#C00000',
+            borderRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { 
+              beginAtZero: true, 
+              ticks: { stepSize: 1, color: textColor }, 
+              grid: { color: gridColor } 
+            },
+            x: { 
+              ticks: { color: textColor }, 
+              grid: { display: false } 
+            }
+          }
+        }
+      });
+
+      // 2. Grafik Departemen (Doughnut)
+      const ctxDept = document.getElementById('chartDepartemen').getContext('2d');
+      if (myChartDept) myChartDept.destroy();
+
+      myChartDept = new Chart(ctxDept, {
+        type: 'doughnut',
+        data: {
+          labels: data.departemen.map(d => d.departemen),
+          datasets: [{
+            data: data.departemen.map(d => d.jumlah),
+            backgroundColor: ['#C00000', '#1E293B', '#64748B', '#E2E8F0', '#900000'],
+            borderWidth: isDark ? 2 : 1,
+            borderColor: isDark ? '#1E1E1E' : '#FFFFFF'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 } } }
+          },
+          cutout: '65%'
+        }
+      });
+
+    } catch (err) {
+      console.error("Gagal memuat grafik:", err);
+    }
   }
 </script>
 </body>
