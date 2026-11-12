@@ -8,7 +8,6 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Pastikan folder uploads ada
 if (!fs.existsSync('public/uploads')) {
   fs.mkdirSync('public/uploads', { recursive: true });
 }
@@ -33,13 +32,11 @@ app.post('/api/simpan', (req, res) => {
     let fileNameSelfie = '';
     let fileNameKtp = '';
 
-    // Simpan foto base64 ke file fisik
     if (foto_selfie && foto_selfie.startsWith('data:image')) {
       fileNameSelfie = `selfie_${Date.now()}.jpg`;
       const base64Data = foto_selfie.replace(/^data:image\/\w+;base64,/, "");
       fs.writeFileSync(`public/uploads/${fileNameSelfie}`, base64Data, 'base64');
     }
-
     if (foto_ktp && foto_ktp.startsWith('data:image')) {
       fileNameKtp = `ktp_${Date.now()}.jpg`;
       const base64Data = foto_ktp.replace(/^data:image\/\w+;base64,/, "");
@@ -50,7 +47,6 @@ app.post('/api/simpan', (req, res) => {
     const tanggal = now.toISOString().split('T')[0];
     const hari = now.toLocaleDateString('id-ID', { weekday: 'long' });
 
-    // Simpan ke database SQLite LOKAL
     const stmt = db.prepare(`
       INSERT INTO tamu (tanggal, hari, nama, nik, pic, departemen, keperluan, foto_selfie, foto_ktp)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -87,41 +83,69 @@ app.post('/api/logout', (req, res) => {
   res.json({ success: true });
 });
 
-// Ambil Data
+// API DATA (Search & Pagination)
 app.get('/api/data', cekLogin, (req, res) => {
   try {
-    const { filter_type, bulan, tanggal } = req.query;
-    let query = 'SELECT * FROM tamu';
+    const { filter_type, bulan, tanggal, search, page, limit } = req.query;
+    let query = 'SELECT * FROM tamu WHERE 1=1';
     let params = [];
 
     if (filter_type === 'bulan' && bulan) {
-      query += " WHERE strftime('%Y-%m', tanggal) = ?";
+      query += " AND strftime('%Y-%m', tanggal) = ?";
       params.push(bulan);
     } else if (filter_type === 'tanggal' && tanggal) {
-      query += ' WHERE tanggal = ?';
+      query += ' AND tanggal = ?';
       params.push(tanggal);
     }
 
-    query += ' ORDER BY created_at DESC';
+    // Fitur Search
+    if (search) {
+      query += ' AND (nama LIKE ? OR nik LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    // Hitung Total Data (untuk pagination)
+    const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as total');
+    const total = db.prepare(countQuery).get(...params).total;
+
+    // Pagination
+    const limitNum = parseInt(limit) || 10;
+    const pageNum = parseInt(page) || 1;
+    const offset = (pageNum - 1) * limitNum;
+
+    query += ' ORDER BY id DESC LIMIT ? OFFSET ?';
+    params.push(limitNum, offset);
     
     const data = db.prepare(query).all(...params);
-    res.json(data);
+    res.json({ data, total, page: pageNum, limit: limitNum });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ==========================================
-// API STATISTIK UNTUK GRAFIK
-// ==========================================
+// API Checkout Tamu
+app.post('/api/checkout/:id', cekLogin, (req, res) => {
+  try {
+    const { id } = req.params;
+    const tamu = db.prepare('SELECT * FROM tamu WHERE id = ?').get(id);
+    
+    if (!tamu) return res.status(404).json({ error: 'Tamu tidak ditemukan' });
+    if (tamu.checkout_at) return res.status(400).json({ error: 'Tamu sudah checkout' });
+
+    db.prepare('UPDATE tamu SET checkout_at = CURRENT_TIMESTAMP WHERE id = ?').run(id);
+    res.json({ success: true, message: `${tamu.nama} telah checkout` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API STATISTIK
 app.get('/api/stats', cekLogin, (req, res) => {
   try {
     const queryHarian = `SELECT tanggal, COUNT(*) as jumlah FROM tamu GROUP BY tanggal ORDER BY tanggal DESC LIMIT 7`;
     const dataHarian = db.prepare(queryHarian).all().reverse(); 
-
     const queryDept = `SELECT departemen, COUNT(*) as jumlah FROM tamu GROUP BY departemen`;
     const dataDept = db.prepare(queryDept).all();
-
     res.json({ harian: dataHarian, departemen: dataDept });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -132,21 +156,21 @@ app.get('/api/stats', cekLogin, (req, res) => {
 app.get('/api/export', cekLogin, async (req, res) => {
   try {
     const { filter_type, bulan, tanggal } = req.query;
-    let query = 'SELECT * FROM tamu';
+    let query = 'SELECT * FROM tamu WHERE 1=1';
     let params = [];
     let namaFile = 'Laporan_Semua.xlsx';
 
     if (filter_type === 'bulan' && bulan) {
-      query += " WHERE strftime('%Y-%m', tanggal) = ?";
+      query += " AND strftime('%Y-%m', tanggal) = ?";
       params.push(bulan);
       namaFile = `Laporan_Bulan_${bulan}.xlsx`;
     } else if (filter_type === 'tanggal' && tanggal) {
-      query += ' WHERE tanggal = ?';
+      query += ' AND tanggal = ?';
       params.push(tanggal);
       namaFile = `Laporan_Tanggal_${tanggal}.xlsx`;
     }
 
-    query += ' ORDER BY created_at DESC';
+    query += ' ORDER BY id DESC';
     const data = db.prepare(query).all(...params);
 
     const workbook = new ExcelJS.Workbook();
@@ -155,9 +179,9 @@ app.get('/api/export', cekLogin, async (req, res) => {
     worksheet.columns = [
       { header: 'No', key: 'no', width: 5 }, { header: 'Tanggal', key: 'tanggal', width: 15 },
       { header: 'Hari', key: 'hari', width: 10 }, { header: 'Nama Tamu', key: 'nama', width: 25 },
-      { header: 'No ID / NIK', key: 'nik', width: 20 }, { header: 'PIC', key: 'pic', width: 20 },
+      { header: 'NIK', key: 'nik', width: 20 }, { header: 'PIC', key: 'pic', width: 20 },
       { header: 'Departemen', key: 'departemen', width: 20 }, { header: 'Keperluan', key: 'keperluan', width: 30 },
-      { header: 'Waktu Input', key: 'created_at', width: 20 }
+      { header: 'Waktu Masuk', key: 'checkin_at', width: 20 }, { header: 'Waktu Keluar', key: 'checkout_at', width: 20 }
     ];
 
     worksheet.getRow(1).eachCell((cell) => {
@@ -170,7 +194,8 @@ app.get('/api/export', cekLogin, async (req, res) => {
       worksheet.addRow({
         no: index + 1, tanggal: row.tanggal, hari: row.hari, nama: row.nama, nik: row.nik,
         pic: row.pic, departemen: row.departemen, keperluan: row.keperluan,
-        created_at: new Date(row.created_at).toLocaleString('id-ID')
+        checkin_at: new Date(row.checkin_at).toLocaleString('id-ID'),
+        checkout_at: row.checkout_at ? new Date(row.checkout_at).toLocaleString('id-ID') : '-'
       });
     });
 
@@ -183,7 +208,6 @@ app.get('/api/export', cekLogin, async (req, res) => {
   }
 });
 
-// Routing
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/input', (req, res) => res.sendFile(path.join(__dirname, 'public', 'form.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));

@@ -13,8 +13,15 @@ db.exec(`
     keperluan TEXT,
     foto_selfie TEXT,
     foto_ktp TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    checkin_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    checkout_at DATETIME
   );
 `);
+
+// Migrasi: Jika tabel lama belum punya checkout_at, tambahkan otomatis
+const cols = db.prepare("PRAGMA table_info(tamu)").all();
+if (!cols.some(c => c.name === 'checkout_at')) {
+  db.exec('ALTER TABLE tamu ADD COLUMN checkout_at DATETIME');
+}
 
 module.exports = db;

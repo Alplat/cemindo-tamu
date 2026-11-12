@@ -62,7 +62,8 @@
   .chart-card h3 { font-size: 14px; color: var(--teks-sub); margin-bottom: 15px; text-align: center; font-weight: 600; }
 
   .filter-box { background:var(--bg-card); padding:20px; border-radius:12px; margin-bottom:25px; display:flex; gap:15px; align-items:center; flex-wrap:wrap; box-shadow:0 4px 15px rgba(0,0,0,0.03); border-left: 5px solid var(--merah); animation: slideUp 0.6s ease-out; transition: background 0.4s ease; }
-  .filter-box select, .filter-box input { padding:10px 14px; border:2px solid var(--border); border-radius:8px; font-family: inherit; transition: 0.3s; background: var(--bg-input); color: var(--teks-utama); }
+  .filter-box select, .filter-box input[type="month"], .filter-box input[type="date"], .filter-box input[type="text"] { padding:10px 14px; border:2px solid var(--border); border-radius:8px; font-family: inherit; transition: 0.3s; background: var(--bg-input); color: var(--teks-utama); }
+  .filter-box input[type="text"] { width: 200px; }
   .filter-box select:focus, .filter-box input:focus { border-color: var(--merah); outline:none;}
   .btn-export { background:#16A34A; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; margin-left:auto; font-weight:bold; transition: 0.3s; display:flex; align-items:center; gap:8px; }
   .btn-export:hover { background:#15803D; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(22, 163, 74, 0.3);}
@@ -74,15 +75,30 @@
   th { background:var(--bg-input); color:var(--teks-sub); font-weight:700; letter-spacing: 0.5px;}
   tr { transition: background 0.2s; }
   tr:hover { background:var(--bg-input); }
+  
   .foto-tamu { width:50px; height:50px; object-fit:cover; border-radius:8px; cursor:pointer; border:2px solid transparent; transition: all 0.2s; }
   .foto-tamu:hover { border-color: var(--merah); transform: scale(1.15); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+  
+  /* Pagination */
+  .pagination { display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:15px; background:var(--bg-card); border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.03); }
+  .pagination button { background:var(--bg-input); color:var(--teks-utama); border:1px solid var(--border); padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold; transition:0.2s; }
+  .pagination button:hover:not(:disabled) { background:var(--merah); color:white; border-color:var(--merah); }
+  .pagination button:disabled { opacity:0.5; cursor:not-allowed; }
+  .pagination span { font-size:14px; color:var(--teks-sub); font-weight:600; }
+  
+  /* Tombol Checkout */
+  .btn-checkout { background:#F59E0B; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; transition:0.2s; }
+  .btn-checkout:hover { background:#D97706; transform:scale(1.05); }
+  .badge-status { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:bold; }
+  .status-in { background:#FEE2E2; color:#B91C1C; }
+  .status-out { background:#D1FAE5; color:#047857; }
+
   #modalFoto { position:fixed; inset:0; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:99; animation: fadeIn 0.3s; backdrop-filter: blur(5px); }
   #modalFoto img { max-width:90%; max-height:90%; border-radius:12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);}
   .hidden { display:none !important; }
 </style>
 </head>
 <body>
-  <!-- Suara Notifikasi (Aktifkan suara dengan klik di layar) -->
   <audio id="suaraNotif" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
 
 <!-- LOGIN SECTION -->
@@ -124,14 +140,19 @@
     </div>
 
     <div class="filter-box">
-      <label style="font-weight:bold; font-size:14px;">Filter Data:</label>
+      <!-- Fitur Search -->
+      <input type="text" id="inputSearch" placeholder="🔍 Cari Nama atau NIK..." oninput="debounceSearch()">
+      
+      <label style="font-weight:bold; font-size:14px;">Filter:</label>
       <select id="filterType" onchange="toggleFilter()">
         <option value="semua">Semua Data</option>
         <option value="bulan">Per Bulan</option>
         <option value="tanggal">Per Tanggal</option>
       </select>
-      <input type="month" id="inputBulan" class="hidden" onchange="loadData()">
-      <input type="date" id="inputTanggal" class="hidden" onchange="loadData()">
+      
+      <input type="month" id="inputBulan" class="hidden" onchange="loadData(1)">
+      <input type="date" id="inputTanggal" class="hidden" onchange="loadData(1)">
+      
       <button class="btn-export" onclick="exportExcel()">📊 Export Excel</button>
     </div>
 
@@ -140,16 +161,24 @@
         <thead>
           <tr>
             <th>No</th>
-            <th>Tanggal & Hari</th>
+            <th>Tanggal</th>
             <th>Nama Tamu</th>
             <th>NIK</th>
             <th>PIC & Dept</th>
-            <th>Keperluan</th>
+            <th>Status</th>
+            <th>Aksi</th>
             <th>Foto</th>
           </tr>
         </thead>
         <tbody id="tabelData"></tbody>
       </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button id="btnPrev" onclick="changePage(-1)">« Sebelumnya</button>
+      <span id="pageInfo">Halaman 1</span>
+      <button id="btnNext" onclick="changePage(1)">Selanjutnya »</button>
     </div>
   </div>
 </div>
@@ -165,15 +194,9 @@
     const text = isDark ? '☀️' : '🌙';
     if(document.getElementById('themeBtnLogin')) document.getElementById('themeBtnLogin').innerText = text;
     if(document.getElementById('themeBtnAdmin')) document.getElementById('themeBtnAdmin').innerText = text;
-    
-    if(!isDark && document.getElementById('themeBtnLogin')) {
-        document.getElementById('themeBtnLogin').style.color = '#333';
-    } else if(document.getElementById('themeBtnLogin')) {
-        document.getElementById('themeBtnLogin').style.color = '#fff';
-    }
-    if (!document.getElementById('dashboardSection').classList.contains('hidden')) {
-      loadCharts();
-    }
+    if(!isDark && document.getElementById('themeBtnLogin')) document.getElementById('themeBtnLogin').style.color = '#333';
+    else if(document.getElementById('themeBtnLogin')) document.getElementById('themeBtnLogin').style.color = '#fff';
+    if (!document.getElementById('dashboardSection').classList.contains('hidden')) loadCharts();
   }
 
   if (localStorage.getItem('theme') === 'dark') {
@@ -191,20 +214,22 @@
   // --- LOGIKA ADMIN ---
   let lastCount = 0;
   let isLoggedIn = false;
+  let currentPage = 1;
+  let totalData = 0;
+  const limitPerPage = 10;
+  let searchTimeout = null;
 
   window.onload = () => { cekStatusLogin(); };
 
   async function cekStatusLogin() {
-    const res = await fetch('/api/data');
+    const res = await fetch('/api/data?page=1&limit=1');
     if (res.ok) {
       isLoggedIn = true;
       document.getElementById('loginSection').classList.add('hidden');
       document.getElementById('dashboardSection').classList.remove('hidden');
-      
-      const initialData = await res.json();
-      lastCount = initialData.length; 
-      
-      loadData();
+      const result = await res.json();
+      lastCount = result.total;
+      loadData(1);
       loadCharts();
     }
   }
@@ -212,7 +237,6 @@
   async function login() {
     const username = document.getElementById('user').value;
     const password = document.getElementById('pass').value;
-    
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -221,13 +245,12 @@
 
     if (res.ok) {
       isLoggedIn = true;
-      const cekData = await fetch('/api/data');
-      const initialData = await cekData.json();
-      lastCount = initialData.length;
-
+      const cekData = await fetch('/api/data?page=1&limit=1');
+      const result = await cekData.json();
+      lastCount = result.total;
       document.getElementById('loginSection').classList.add('hidden');
       document.getElementById('dashboardSection').classList.remove('hidden');
-      loadData();
+      loadData(1);
       loadCharts();
     } else {
       alert('Username atau Password salah!');
@@ -244,48 +267,93 @@
     const type = document.getElementById('filterType').value;
     document.getElementById('inputBulan').classList.add('hidden');
     document.getElementById('inputTanggal').classList.add('hidden');
-
-    if (type === 'bulan') {
-      document.getElementById('inputBulan').classList.remove('hidden');
-    } else if (type === 'tanggal') {
-      document.getElementById('inputTanggal').classList.remove('hidden');
-    }
-    loadData();
+    if (type === 'bulan') document.getElementById('inputBulan').classList.remove('hidden');
+    else if (type === 'tanggal') document.getElementById('inputTanggal').classList.remove('hidden');
+    loadData(1);
   }
 
-  async function loadData() {
+  // --- FITUR SEARCH (Debounce) ---
+  function debounceSearch() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => loadData(1), 500); // Tunggu 0.5 detik setelah ngetik
+  }
+
+  // --- LOAD DATA (Pagination) ---
+  async function loadData(page = currentPage) {
+    currentPage = page;
     const type = document.getElementById('filterType').value;
     const bulan = document.getElementById('inputBulan').value;
     const tanggal = document.getElementById('inputTanggal').value;
+    const search = document.getElementById('inputSearch').value;
 
-    let url = `/api/data?filter_type=${type}&bulan=${bulan}&tanggal=${tanggal}`;
+    let url = `/api/data?filter_type=${type}&bulan=${bulan}&tanggal=${tanggal}&search=${search}&page=${page}&limit=${limitPerPage}`;
     const res = await fetch(url);
-    const data = await res.json();
+    const result = await res.json();
+    
+    const data = result.data;
+    totalData = result.total;
 
     const tbody = document.getElementById('tabelData');
     tbody.innerHTML = '';
 
     if (data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:var(--teks-sub);">Tidak ada data ditemukan pada filter ini.</td></tr>';
-      return;
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--teks-sub);">Tidak ada data ditemukan.</td></tr>';
+    } else {
+      data.forEach((row, index) => {
+        const no = (currentPage - 1) * limitPerPage + index + 1;
+        const statusBadge = row.checkout_at 
+          ? `<span class="badge-status status-out">Selesai</span><br><small style="font-size:10px; color:var(--teks-sub)">${new Date(row.checkout_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</small>` 
+          : `<span class="badge-status status-in">Di Dalam</span>`;
+          
+        const btnCheckout = row.checkout_at 
+          ? '-' 
+          : `<button class="btn-checkout" onclick="checkoutTamu(${row.id})">Checkout</button>`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${no}</td>
+          <td><b>${row.tanggal}</b><br><small style="color:var(--teks-sub)">${row.hari}</small></td>
+          <td><b>${row.nama}</b></td>
+          <td>${row.nik}</td>
+          <td><span style="color:var(--merah); font-weight:700;">${row.pic}</span><br><small style="color:var(--teks-sub)">${row.departemen}</small></td>
+          <td>${statusBadge}</td>
+          <td>${btnCheckout}</td>
+          <td>
+            ${row.foto_selfie ? `<img src="/uploads/${row.foto_selfie}" class="foto-tamu" onclick="lihatFoto(this.src)" title="Selfie">` : '-'}
+            ${row.foto_ktp ? `<img src="/uploads/${row.foto_ktp}" class="foto-tamu" onclick="lihatFoto(this.src)" title="KTP" style="margin-left:5px">` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
-    data.forEach((row, index) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${index + 1}</td>
-        <td><b>${row.tanggal}</b><br><small style="color:var(--teks-sub)">${row.hari}</small></td>
-        <td><b>${row.nama}</b></td>
-        <td>${row.nik}</td>
-        <td><span style="color:var(--merah); font-weight:700;">${row.pic}</span><br><small style="color:var(--teks-sub)">${row.departemen}</small></td>
-        <td>${row.keperluan}</td>
-        <td>
-          ${row.foto_selfie ? `<img src="/uploads/${row.foto_selfie}" class="foto-tamu" onclick="lihatFoto(this.src)" title="Foto Selfie">` : '-'}
-          ${row.foto_ktp ? `<img src="/uploads/${row.foto_ktp}" class="foto-tamu" onclick="lihatFoto(this.src)" title="Foto KTP" style="margin-left:8px">` : ''}
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+    // Update UI Pagination
+    const totalPages = Math.ceil(totalData / limitPerPage) || 1;
+    document.getElementById('pageInfo').innerText = `Halaman ${currentPage} dari ${totalPages}`;
+    document.getElementById('btnPrev').disabled = currentPage <= 1;
+    document.getElementById('btnNext').disabled = currentPage >= totalPages;
+  }
+
+  function changePage(direction) {
+    const newPage = currentPage + direction;
+    if (newPage >= 1) loadData(newPage);
+  }
+
+  // --- CHECKOUT TAMU ---
+  async function checkoutTamu(id) {
+    if (!confirm('Apakah tamu ini akan keluar/checkout?')) return;
+    try {
+      const res = await fetch(`/api/checkout/${id}`, { method: 'POST' });
+      const result = await res.json();
+      if (res.ok) {
+        alert('✅ ' + result.message);
+        loadData(currentPage); // Refresh tabel
+      } else {
+        alert('❌ ' + result.error);
+      }
+    } catch (err) {
+      alert('Gagal: ' + err.message);
+    }
   }
 
   function lihatFoto(src) {
@@ -308,7 +376,6 @@
     try {
       const res = await fetch('/api/stats');
       if (!res.ok) return;
-      
       const data = await res.json();
       const isDark = document.body.classList.contains('dark-mode');
       const textColor = isDark ? '#A0A0A0' : '#475569';
@@ -316,71 +383,36 @@
 
       const ctxHarian = document.getElementById('chartHarian').getContext('2d');
       if (myChartHarian) myChartHarian.destroy();
-
       myChartHarian = new Chart(ctxHarian, {
         type: 'bar',
-        data: {
-          labels: data.harian.map(d => d.tanggal),
-          datasets: [{
-            label: 'Jumlah Tamu',
-            data: data.harian.map(d => d.jumlah),
-            backgroundColor: '#C00000',
-            borderRadius: 5
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1, color: textColor }, grid: { color: gridColor } },
-            x: { ticks: { color: textColor }, grid: { display: false } }
-          }
-        }
+        data: { labels: data.harian.map(d => d.tanggal), datasets: [{ label: 'Jumlah', data: data.harian.map(d => d.jumlah), backgroundColor: '#C00000', borderRadius: 5 }] },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: textColor }, grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { display: false } } } }
       });
 
       const ctxDept = document.getElementById('chartDepartemen').getContext('2d');
       if (myChartDept) myChartDept.destroy();
-
       myChartDept = new Chart(ctxDept, {
         type: 'doughnut',
-        data: {
-          labels: data.departemen.map(d => d.departemen),
-          datasets: [{
-            data: data.departemen.map(d => d.jumlah),
-            backgroundColor: ['#C00000', '#1E293B', '#64748B', '#E2E8F0', '#900000'],
-            borderWidth: isDark ? 2 : 1,
-            borderColor: isDark ? '#1E1E1E' : '#FFFFFF'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 } } }
-          },
-          cutout: '65%'
-        }
+        data: { labels: data.departemen.map(d => d.departemen), datasets: [{ data: data.departemen.map(d => d.jumlah), backgroundColor: ['#C00000', '#1E293B', '#64748B', '#E2E8F0', '#900000'], borderWidth: isDark ? 2 : 1, borderColor: isDark ? '#1E1E1E' : '#FFFFFF' }] },
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 } } } }, cutout: '65%' }
       });
-
-    } catch (err) {
-      console.error("Gagal memuat grafik:", err);
-    }
+    } catch (err) { console.error(err); }
   }
 
   // --- LOGIKA REAL-TIME ALERT ---
   function cekTamuBaru() {
     if (!isLoggedIn) return;
-
-    fetch('/api/data')
+    fetch('/api/data?page=1&limit=1')
       .then(res => res.json())
-      .then(data => {
-        if (lastCount > 0 && data.length > lastCount) {
+      .then(result => {
+        if (lastCount > 0 && result.total > lastCount) {
           const audio = document.getElementById('suaraNotif');
           audio.play().catch(e => console.log("Suara diblokir browser"));
-          tampilkanNotif(data.length - lastCount);
-          loadData();
+          tampilkanNotif(result.total - lastCount);
+          loadData(1);
           loadCharts();
         }
-        lastCount = data.length;
+        lastCount = result.total;
       })
       .catch(err => console.error(err));
   }
@@ -388,25 +420,14 @@
   function tampilkanNotif(jumlahBaru) {
     const oldNotif = document.querySelector('.notif-toast');
     if (oldNotif) oldNotif.remove();
-
     const div = document.createElement('div');
     div.className = 'notif-toast';
-    div.innerHTML = `
-      <span>🔔 Ada ${jumlahBaru} tamu baru!</span>
-      <button onclick="this.parentElement.remove(); loadData();">Lihat</button>
-    `;
+    div.innerHTML = `<span>🔔 Ada ${jumlahBaru} tamu baru!</span><button onclick="this.parentElement.remove(); loadData(1);">Lihat</button>`;
     document.body.appendChild(div);
-    
     setTimeout(() => div.classList.add('show'), 100);
-    setTimeout(() => {
-      if(div.parentElement) {
-        div.classList.remove('show');
-        setTimeout(() => div.remove(), 400);
-      }
-    }, 5000);
+    setTimeout(() => { if(div.parentElement) { div.classList.remove('show'); setTimeout(() => div.remove(), 400); } }, 5000);
   }
 
-  // Cek data baru setiap 10 detik
   setInterval(cekTamuBaru, 10000);
 </script>
 </body>
