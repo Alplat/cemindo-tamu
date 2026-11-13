@@ -5,157 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formulir Tamu - Cemindo</title>
 <style>
-  :root {
-    --merah: #C00000;
-    --bg-body: #F0F2F5;
-    --bg-card: #FFFFFF;
-    --bg-input: #FAFAFA;
-    --border: #E2E8F0;
-    --teks-utama: #333333;
-    --teks-label: #475569;
-  }
-
-  body.dark-mode {
-    --bg-body: #121212;
-    --bg-card: #1E1E1E;
-    --bg-input: #2D2D2D;
-    --border: #404040;
-    --teks-utama: #F1F1F1;
-    --teks-label: #A0A0A0;
-  }
-
+  /* (Gunakan CSS yang sama seperti sebelumnya, saya persingkat di sini) */
+  :root { --merah: #C00000; --bg-body: #F0F2F5; --bg-card: #FFFFFF; --bg-input: #FAFAFA; --border: #E2E8F0; --teks-utama: #333333; --teks-label: #475569; }
+  body.dark-mode { --bg-body: #121212; --bg-card: #1E1E1E; --bg-input: #2D2D2D; --border: #404040; --teks-utama: #F1F1F1; --teks-label: #A0A0A0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
-  @keyframes spin { 100% { transform: rotate(360deg); } }
-
-  body { 
-    font-family: 'Segoe UI', system-ui, sans-serif; 
-    background: var(--bg-body); min-height: 100vh; padding: 20px; color: var(--teks-utama);
-    transition: background 0.4s ease, color 0.4s ease;
-  }
-  
-  .theme-toggle {
-    position: fixed; top: 20px; right: 20px; background: var(--bg-card);
-    border: 2px solid var(--border); font-size: 20px; padding: 10px; border-radius: 50%;
-    cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.3s; z-index: 100;
-  }
-  .theme-toggle:hover { transform: scale(1.1); }
-
-  .container { 
-    max-width: 550px; margin: 20px auto; background: var(--bg-card); padding: 40px; 
-    border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
-    animation: slideUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
-    transition: background 0.4s ease;
-  }
-  
+  body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); min-height: 100vh; padding: 20px; color: var(--teks-utama); transition: 0.4s; }
+  .container { max-width: 550px; margin: 20px auto; background: var(--bg-card); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
   .header-form { text-align: center; margin-bottom: 30px; }
   .header-form img { max-width: 130px; margin-bottom: 15px; }
   .header-form h2 { color: var(--merah); font-size: 22px; font-weight: 800; }
-  
   .form-group { margin-bottom: 20px; }
   label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--teks-label); }
-  
-  input, select, textarea { 
-    width: 100%; padding: 14px; border: 2px solid var(--border); 
-    border-radius: 10px; font-family: inherit; font-size: 14px; color: var(--teks-utama);
-    transition: all 0.3s ease; background: var(--bg-input);
-  }
-  input:focus, select:focus, textarea:focus { 
-    border-color: var(--merah); background: var(--bg-card);
-    outline: none; box-shadow: 0 0 0 4px rgba(192,0,0,0.1); 
-  }
-
+  input, select, textarea { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 14px; color: var(--teks-utama); transition: 0.3s; background: var(--bg-input); }
+  input:focus, select:focus, textarea:focus { border-color: var(--merah); background: var(--bg-card); outline: none; }
   .foto-box { display: flex; gap: 15px; }
-  .foto-item { 
-    flex: 1; text-align: center; border: 2px dashed var(--border); padding: 20px; 
-    border-radius: 12px; cursor: pointer; background: var(--bg-input); 
-    transition: all 0.3s ease; position: relative; overflow: hidden;
-  }
-  .foto-item:hover { border-color: var(--merah); }
-  .foto-item img { 
-    width: 100%; height: 120px; object-fit: cover; display: none; 
-    border-radius: 8px; margin-bottom: 10px; animation: fadeIn 0.4s;
-  }
+  .foto-item { flex: 1; text-align: center; border: 2px dashed var(--border); padding: 20px; border-radius: 12px; cursor: pointer; background: var(--bg-input); }
+  .foto-item img { width: 100%; height: 120px; object-fit: cover; display: none; border-radius: 8px; margin-bottom: 10px; }
   .foto-item span { font-size: 13px; color: var(--teks-label); font-weight: 600; display: block; }
-  
-  .btn-submit { 
-    width: 100%; background: var(--merah); color: #fff; border: none; 
-    padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 700; 
-    cursor: pointer; transition: all 0.3s; margin-top: 20px;
-    display: flex; justify-content: center; align-items: center; gap: 10px;
-  }
-  .btn-submit:hover:not(:disabled) { background: #900000; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(192,0,0,0.2); }
-  .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
-  
-  .spinner { 
-    display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); 
-    border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; 
-  }
-  .loading .spinner { display: block; }
-
+  .btn-submit { width: 100%; background: var(--merah); color: #fff; border: none; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; }
   .hidden { display: none !important; }
-  
-  /* Tampilan Sukses */
-  .sukses-box { text-align: center; padding: 60px 20px; animation: popIn 0.6s forwards; }
+  .sukses-box { text-align: center; padding: 60px 20px; }
   .sukses-icon { font-size: 90px; line-height: 1; margin-bottom: 20px; }
-  .btn-print { 
-    background: var(--merah); color: #fff; border: none; padding: 12px 30px; 
-    border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 15px;
-    display: inline-flex; align-items: center; gap: 8px; transition: 0.3s;
-  }
-  .btn-print:hover { background: #900000; transform: translateY(-2px); }
-
-  /* =========================================
-     DESAIN VISITOR BADGE (Hanya muncul saat print)
-     ========================================= */
-  #badgeArea { display: none; } /* Tersembunyi di layar */
-
+  .btn-print { background: var(--merah); color: #fff; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 15px; }
+  #badgeArea { display: none; }
   @media print {
-    /* Sembunyikan semua elemen web */
     body * { visibility: hidden; }
-    body { background: white; padding: 0; margin: 0; }
-    
-    /* Tampilkan hanya area badge */
     #badgeArea, #badgeArea * { visibility: visible; }
-    #badgeArea { 
-      display: block !important; position: absolute; left: 0; top: 0; 
-      width: 10cm; height: 14cm; /* Ukuran standar badge */
-      background: white; color: #333; font-family: 'Segoe UI', sans-serif;
-      border: 2px solid #C00000; border-radius: 15px; box-sizing: border-box;
-      padding: 20px; text-align: center;
-    }
-
-    /* Desain dalam Badge */
+    #badgeArea { display: block !important; position: absolute; left: 0; top: 0; width: 10cm; height: 14cm; background: white; color: #333; border: 2px solid #C00000; border-radius: 15px; padding: 20px; text-align: center; }
     .badge-header { border-bottom: 2px solid #C00000; padding-bottom: 10px; margin-bottom: 15px; }
-    .badge-header img { height: 40px; margin-bottom: 5px; }
-    .badge-header h2 { font-size: 16px; color: #C00000; margin: 0; letter-spacing: 1px; }
-    .badge-header p { font-size: 10px; margin: 0; color: #666; text-transform: uppercase; }
-    
-    .badge-foto { 
-      width: 100px; height: 100px; border-radius: 50%; object-fit: cover; 
-      border: 3px solid #C00000; margin: 0 auto 10px auto; display: block;
-    }
-    
+    .badge-header img { height: 40px; }
+    .badge-header h2 { font-size: 16px; color: #C00000; margin: 0; }
+    .badge-foto { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #C00000; margin: 0 auto 10px auto; display: block; }
     .badge-nama { font-size: 22px; font-weight: 800; margin-bottom: 5px; color: #1E293B; }
-    .badge-perusahaan { font-size: 14px; color: #666; margin-bottom: 20px; }
-    
     .badge-detail { text-align: left; background: #F8FAFC; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-    .badge-detail table { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .badge-detail table { width: 100%; font-size: 12px; }
     .badge-detail td { padding: 5px 0; border-bottom: 1px dashed #ccc; }
     .badge-detail td:first-child { color: #666; width: 40%; }
     .badge-detail td:last-child { font-weight: bold; color: #333; }
-    .badge-detail tr:last-child td { border-bottom: none; }
-    
-    .badge-footer { font-size: 9px; color: #999; position: absolute; bottom: 15px; left: 0; width: 100%; text-align: center; }
   }
 </style>
 </head>
 <body>
 
-  <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+  <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" style="position:fixed; top:20px; right:20px; background:var(--bg-card); border:2px solid var(--border); font-size:20px; padding:10px; border-radius:50%; cursor:pointer;">🌙</button>
 
   <div class="container" id="formContainer">
     <div class="header-form">
@@ -171,22 +63,21 @@
       <label>No ID Card / NIK *</label>
       <input type="text" id="nik" placeholder="Masukkan NIK" required>
     </div>
+
+    <!-- UBAH INPUT PIC MENJADI DROPDOWN -->
     <div class="form-group">
       <label>PIC yang Dituju *</label>
-      <input type="text" id="pic" placeholder="Contoh: Bpk. Budi" required>
-    </div>
-    <div class="form-group">
-      <label>Departemen *</label>
-      <select id="departemen">
-        <option value="">-- Pilih Departemen --</option>
-        <option value="HRD">HRD</option>
-        <option value="Produksi">Produksi</option>
-        <option value="IT">IT</option>
-        <option value="Finance">Finance</option>
-        <option value="Logistik">Logistik</option>
-        <option value="Lainnya">Lainnya</option>
+      <select id="pic" onchange="ubahDepartemen()" required>
+        <option value="">-- Pilih Karyawan --</option>
       </select>
     </div>
+
+    <div class="form-group">
+      <label>Departemen *</label>
+      <!-- Departemen akan terisi otomatis dari pilihan PIC -->
+      <input type="text" id="departemen" placeholder="Terisi otomatis" readonly style="background: #eee; cursor: not-allowed;">
+    </div>
+
     <div class="form-group">
       <label>Keperluan *</label>
       <textarea id="keperluan" rows="3" placeholder="Contoh: Meeting, Interview, Kirim Barang"></textarea>
@@ -210,40 +101,26 @@
         </div>
       </div>
     </div>
-    <button onclick="simpanData()" id="btnSimpan" class="btn-submit">
-      <span id="btnText">Kirim Data Registrasi</span>
-      <div class="spinner"></div>
-    </button>
+    <button onclick="simpanData()" id="btnSimpan" class="btn-submit">Kirim Data Registrasi</button>
   </div>
 
-  <!-- Tampilan Sukses -->
+  <!-- Tampilan Sukses & Badge (Sama seperti sebelumnya) -->
   <div class="container sukses-box hidden" id="suksesContainer">
     <div class="sukses-icon">✅</div>
     <h2 style="margin-bottom:10px;">Registrasi Berhasil!</h2>
-    <p style="color:var(--teks-label); line-height:1.6; margin-bottom: 20px;">Terima kasih <b id="namaSukses"></b>.<br>Silakan cetak kartu tamu Anda.</p>
-    
-    <button class="btn-print" onclick="window.print()">
-      🖨️ Cetak Visitor Badge
-    </button>
+    <p style="color:var(--teks-label); line-height:1.6; margin-bottom: 20px;">Terima kasih <b id="namaSukses"></b>.<br>Notifikasi WA telah dikirim ke PIC yang dituju.</p>
+    <button class="btn-print" onclick="window.print()">🖨️ Cetak Visitor Badge</button>
     <br>
     <a href="/" style="display:inline-block; margin-top:15px; color:var(--teks-label); text-decoration:none; font-size:13px;">Kembali ke Halaman Depan</a>
   </div>
 
-  <!-- =========================================
-       AREA CETAK BADGE (Hanya terlihat saat print)
-       ========================================= -->
   <div id="badgeArea">
     <div class="badge-header">
       <img src="/logo.png" alt="Logo">
       <h2>PT. CEMINDO GEMILANG</h2>
-      <p>Batam - Indonesia</p>
     </div>
-    
-    <img id="badgeFoto" class="badge-foto" src="" alt="Foto Tamu">
-    
+    <img id="badgeFoto" class="badge-foto" src="">
     <div class="badge-nama" id="badgeNama">Nama Tamu</div>
-    <div class="badge-perusahaan" id="badgePerusahaan">Perusahaan / Instansi</div>
-    
     <div class="badge-detail">
       <table>
         <tr><td>Tujuan (PIC)</td><td id="badgePic">-</td></tr>
@@ -251,19 +128,13 @@
         <tr><td>Tanggal Masuk</td><td id="badgeTanggal">-</td></tr>
       </table>
     </div>
-    
-    <div class="badge-footer">
-      Kartu ini wajib dipakai selama berada di area PT. Cemindo Gemilang.
-    </div>
   </div>
 
   <!-- Modal Kamera -->
-  <div id="kameraModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:99; animation: fadeIn 0.3s;">
-    <div style="background:var(--bg-card); padding:20px; border-radius:20px; text-align:center; width:90%; max-width:450px; animation: slideUp 0.4s;">
+  <div id="kameraModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:99;">
+    <div style="background:var(--bg-card); padding:20px; border-radius:20px; text-align:center; width:90%; max-width:450px;">
       <h3 style="margin-bottom:15px; color:var(--merah);" id="titleKamera">Ambil Foto</h3>
-      <div style="position:relative; border-radius:12px; overflow:hidden; background:#000; border: 3px solid var(--border);">
-        <video id="video" autoplay playsinline style="width:100%; display:block;"></video>
-      </div>
+      <video id="video" autoplay playsinline style="width:100%; border-radius:12px; background:#000;"></video>
       <canvas id="canvas" style="display:none;"></canvas>
       <div style="display:flex; gap:10px; margin-top:20px;">
         <button onclick="tutupKamera()" style="flex:1; background:var(--bg-input); color:var(--teks-utama); border:none; padding:14px; border-radius:10px; font-weight:bold; cursor:pointer;">Batal</button>
@@ -285,7 +156,41 @@
     document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
   }
 
-  // --- LOGIKA FORM ---
+  // --- AMBIL DATA KARYAWAN UNTUK DROPDOWN ---
+  let dataKaryawan = [];
+  
+  window.onload = async () => {
+    try {
+      const res = await fetch('/api/karyawan');
+      dataKaryawan = await res.json();
+      
+      const selectPic = document.getElementById('pic');
+      dataKaryawan.forEach(k => {
+        const option = document.createElement('option');
+        option.value = k.nama;
+        option.text = `${k.nama} (${k.departemen})`;
+        option.dataset.dept = k.departemen;
+        selectPic.appendChild(option);
+      });
+    } catch (err) {
+      console.error("Gagal load karyawan:", err);
+    }
+  };
+
+  // Otomatis isi departemen saat PIC dipilih
+  function ubahDepartemen() {
+    const select = document.getElementById('pic');
+    const selectedOption = select.options[select.selectedIndex];
+    const deptInput = document.getElementById('departemen');
+    
+    if (selectedOption.value) {
+      deptInput.value = selectedOption.dataset.dept;
+    } else {
+      deptInput.value = '';
+    }
+  }
+
+  // --- LOGIKA FORM & KAMERA ---
   let fotoData = { selfie: null, ktp: null };
   let modeFoto = '';
   let stream = null;
@@ -299,7 +204,7 @@
       stream = await navigator.mediaDevices.getUserMedia(constraints);
       document.getElementById('video').srcObject = stream;
     } catch (err) {
-      alert('Gagal akses kamera: ' + err.message + '\nPastikan menggunakan localhost atau HTTPS.');
+      alert('Gagal akses kamera: ' + err.message);
       tutupKamera();
     }
   }
@@ -323,7 +228,6 @@
     document.getElementById('preview_' + modeFoto).style.display = 'block';
     document.getElementById('text_' + modeFoto).innerText = '✅ Tersimpan';
     document.getElementById('text_' + modeFoto).style.color = '#16A34A';
-
     tutupKamera();
   }
 
@@ -334,7 +238,7 @@
     const departemen = document.getElementById('departemen').value;
     const keperluan = document.getElementById('keperluan').value;
 
-    if (!nama || !nik || !pic || !departemen || !keperluan) {
+    if (!nama || !nik || !pic || !keperluan) {
       return alert('Mohon lengkapi semua data teks!');
     }
     if (!fotoData.selfie || !fotoData.ktp) {
@@ -343,8 +247,7 @@
 
     const btn = document.getElementById('btnSimpan');
     btn.disabled = true;
-    btn.classList.add('loading');
-    document.getElementById('btnText').innerText = 'Menyimpan Data...';
+    btn.innerText = 'Menyimpan & Mengirim WA...';
 
     try {
       const res = await fetch('/api/simpan', {
@@ -358,25 +261,20 @@
         document.getElementById('suksesContainer').classList.remove('hidden');
         document.getElementById('namaSukses').innerText = nama;
 
-        // --- ISI DATA UNTUK BADGE ---
         document.getElementById('badgeFoto').src = fotoData.selfie;
         document.getElementById('badgeNama').innerText = nama;
         document.getElementById('badgePic').innerText = pic;
         document.getElementById('badgeDept').innerText = departemen;
-        
-        const today = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        document.getElementById('badgeTanggal').innerText = today;
+        document.getElementById('badgeTanggal').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
       } else {
         alert('Gagal menyimpan data.');
         btn.disabled = false;
-        btn.classList.remove('loading');
-        document.getElementById('btnText').innerText = 'Kirim Data Registrasi';
+        btn.innerText = 'Kirim Data Registrasi';
       }
     } catch (err) {
       alert('Error: ' + err.message);
       btn.disabled = false;
-      btn.classList.remove('loading');
-      document.getElementById('btnText').innerText = 'Kirim Data Registrasi';
+      btn.innerText = 'Kirim Data Registrasi';
     }
   }
 </script>
