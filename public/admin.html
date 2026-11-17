@@ -99,9 +99,7 @@
   #modalFoto img { max-width:90%; max-height:90%; border-radius:12px; }
   .hidden { display:none !important; }
 
-  /* =========================================
-     DESAIN VISITOR BADGE UNTUK ADMIN
-     ========================================= */
+  /* DESAIN VISITOR BADGE UNTUK ADMIN */
   #badgeArea { display: none; }
   @media print {
     body * { visibility: hidden; }
@@ -199,7 +197,7 @@
   </div>
 </div>
 
-<!-- AREA BADGE UNTUK PRINT (Tersembunyi di layar) -->
+<!-- AREA BADGE UNTUK PRINT -->
 <div id="badgeArea">
   <div class="badge-header">
     <img src="/logo.png" alt="Logo">
@@ -334,7 +332,6 @@
           ? `<span class="badge-status status-out">Selesai</span><br><small style="font-size:10px; color:var(--teks-sub)">${new Date(row.checkout_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</small>` 
           : `<span class="badge-status status-in">Di Dalam</span>`;
           
-        // Tombol Checkout & Cetak Badge
         let btnAction = '';
         if (!row.checkout_at) {
           btnAction += `<button class="btn-checkout" onclick="checkoutTamu(${row.id})">Checkout</button>`;
@@ -370,22 +367,22 @@
     if (newPage >= 1) loadData(newPage);
   }
 
-  // --- FUNGSI CETAK BADGE (DARI ADMIN) ---
+  // --- FUNGSI CETAK BADGE (FIX INVALID DATE) ---
   function cetakBadge(id) {
-    // Ambil data tamu dari API berdasarkan ID
     fetch(`/api/tamu/${id}`)
       .then(res => res.json())
       .then(data => {
-        // Isi elemen badge
         document.getElementById('badgeFoto').src = `/uploads/${data.foto_selfie}`;
         document.getElementById('badgeNama').innerText = data.nama;
         document.getElementById('badgePic').innerText = data.pic;
         document.getElementById('badgeDept').innerText = data.departemen;
         
-        const tgl = new Date(data.checkin_at).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        // --- PERBAIKAN TANGGAL ---
+        // Ubah format string SQLite "YYYY-MM-DD HH:MM:SS" menjadi "YYYY-MM-DDTHH:MM:SS"
+        const rawDate = data.checkin_at.replace(' ', 'T'); 
+        const tgl = new Date(rawDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         document.getElementById('badgeTanggal').innerText = tgl;
 
-        // Panggil jendela print browser
         setTimeout(() => { window.print(); }, 300);
       })
       .catch(err => alert('Gagal memuat data badge: ' + err.message));

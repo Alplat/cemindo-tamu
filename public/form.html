@@ -24,9 +24,8 @@
   input, select, textarea { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 14px; color: var(--teks-utama); transition: 0.3s; background: var(--bg-input); }
   input:focus, select:focus, textarea:focus { border-color: var(--merah); background: var(--bg-card); outline: none; }
   
-  /* Style saat dropdown disabled */
-  select:disabled, input:disabled { background: #e9ecef; cursor: not-allowed; color: #999; }
-  body.dark-mode select:disabled, body.dark-mode input:disabled { background: #1a1a1a; }
+  select:disabled { background: #e9ecef; cursor: not-allowed; color: #999; }
+  body.dark-mode select:disabled { background: #1a1a1a; }
 
   .foto-box { display: flex; gap: 15px; }
   .foto-item { flex: 1; text-align: center; border: 2px dashed var(--border); padding: 20px; border-radius: 12px; cursor: pointer; background: var(--bg-input); }
@@ -36,26 +35,17 @@
   .btn-submit { width: 100%; background: var(--merah); color: #fff; border: none; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; }
   .hidden { display: none !important; }
   
-  /* Sukses & Print */
+  /* Sukses Box */
   .sukses-box { text-align: center; padding: 60px 20px; }
   .sukses-icon { font-size: 90px; line-height: 1; margin-bottom: 20px; }
-  .btn-print { background: var(--merah); color: #fff; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-  #badgeArea { display: none; }
-  @media print {
-    body * { visibility: hidden; }
-    #badgeArea, #badgeArea * { visibility: visible; }
-    #badgeArea { display: block !important; position: absolute; left: 0; top: 0; width: 10cm; height: 14cm; background: white; color: #333; border: 2px solid #C00000; border-radius: 15px; padding: 20px; text-align: center; }
-    .badge-header { border-bottom: 2px solid #C00000; padding-bottom: 10px; margin-bottom: 15px; }
-    .badge-header img { height: 40px; }
-    .badge-header h2 { font-size: 16px; color: #C00000; margin: 0; }
-    .badge-foto { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #C00000; margin: 0 auto 10px auto; display: block; }
-    .badge-nama { font-size: 22px; font-weight: 800; margin-bottom: 5px; color: #1E293B; }
-    .badge-detail { text-align: left; background: #F8FAFC; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-    .badge-detail table { width: 100%; font-size: 12px; }
-    .badge-detail td { padding: 5px 0; border-bottom: 1px dashed #ccc; }
-    .badge-detail td:first-child { color: #666; width: 40%; }
-    .badge-detail td:last-child { font-weight: bold; color: #333; }
+  
+  .btn-back { 
+    display: inline-block; background: #E2E8F0; color: #333; 
+    padding: 14px 30px; border-radius: 10px; text-decoration: none; 
+    font-weight: bold; font-size: 15px; transition: 0.3s; margin-top: 15px;
+    border: 2px solid #CBD5E1;
   }
+  .btn-back:hover { background: #CBD5E1; transform: translateY(-2px); }
 </style>
 </head>
 <body>
@@ -91,7 +81,7 @@
       </select>
     </div>
 
-    <!-- 2. PILIH PIC (BARU AKTIF SETELAH DEPT DIPILIH) -->
+    <!-- 2. PILIH PIC -->
     <div class="form-group">
       <label>PIC yang Dituju *</label>
       <select id="pic" required disabled>
@@ -125,28 +115,20 @@
     <button onclick="simpanData()" id="btnSimpan" class="btn-submit">Kirim Data Registrasi</button>
   </div>
 
-  <!-- Sukses Box & Badge Print -->
- <div class="container sukses-box hidden" id="suksesContainer">
+  <!-- Tampilan Sukses dengan Tombol Back -->
+  <div class="container sukses-box hidden" id="suksesContainer">
     <div class="sukses-icon">✅</div>
     <h2 style="margin-bottom:10px;">Registrasi Berhasil!</h2>
-    <p style="color:var(--teks-label); line-height:1.6; margin-bottom: 20px;">Terima kasih <b id="namaSukses"></b>.<br>Notifikasi WA telah dikirim ke PIC.<br>Silakan menunggu di resepsionis untuk pengambilan kartu tamu.</p>
-    <a href="/" style="display:inline-block; margin-top:15px; color:var(--teks-label); text-decoration:none; font-size:13px;">Kembali ke Halaman Depan</a>
-  </div>
-
-  <div id="badgeArea">
-    <div class="badge-header">
-      <img src="/logo.png" alt="Logo">
-      <h2>PT. CEMINDO GEMILANG</h2>
-    </div>
-    <img id="badgeFoto" class="badge-foto" src="">
-    <div class="badge-nama" id="badgeNama">Nama Tamu</div>
-    <div class="badge-detail">
-      <table>
-        <tr><td>Tujuan (PIC)</td><td id="badgePic">-</td></tr>
-        <tr><td>Departemen</td><td id="badgeDept">-</td></tr>
-        <tr><td>Tanggal Masuk</td><td id="badgeTanggal">-</td></tr>
-      </table>
-    </div>
+    <p style="color:var(--teks-label); line-height:1.6; margin-bottom: 25px;">
+      Terima kasih <b id="namaSukses"></b>.<br>
+      Notifikasi WA telah dikirim ke PIC.<br>
+      Silakan menunggu di resepsionis untuk pengambilan kartu tamu.
+    </p>
+    
+    <!-- TOMBOL KEMBALI YANG JELAS -->
+    <a href="/" class="btn-back">
+      ⬅️ Kembali ke Halaman Depan
+    </a>
   </div>
 
   <!-- Modal Kamera -->
@@ -175,9 +157,8 @@
     document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
   }
 
-  // --- AMBIL DATA KARYAWAN DARI API ---
+  // --- AMBIL DATA KARYAWAN ---
   let dataKaryawan = [];
-  
   window.onload = async () => {
     try {
       const res = await fetch('/api/karyawan');
@@ -187,16 +168,14 @@
     }
   };
 
-  // --- LOGIKA FILTER DEPARTEMEN KE PIC ---
+  // --- FILTER DEPARTEMEN KE PIC ---
   function filterPIC() {
     const deptTerpilih = document.getElementById('departemen').value;
     const selectPic = document.getElementById('pic');
     
-    // Reset dropdown PIC
     selectPic.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
     
     if (deptTerpilih) {
-      // Filter karyawan berdasarkan departemen yang dipilih
       const karyawanFiltered = dataKaryawan.filter(k => k.departemen === deptTerpilih);
       
       if (karyawanFiltered.length > 0) {
@@ -206,9 +185,9 @@
           option.text = k.nama;
           selectPic.appendChild(option);
         });
-        selectPic.disabled = false; // Aktifkan dropdown PIC
+        selectPic.disabled = false;
       } else {
-        selectPic.innerHTML = '<option value="">-- Tidak ada karyawan di dept ini --</option>';
+        selectPic.innerHTML = '<option value="">-- Tidak ada karyawan --</option>';
         selectPic.disabled = true;
       }
     } else {
@@ -266,7 +245,7 @@
     const keperluan = document.getElementById('keperluan').value;
 
     if (!nama || !nik || !dept || !pic || !keperluan) {
-      return alert('Mohon lengkapi semua data teks (Departemen & PIC wajib dipilih)!');
+      return alert('Mohon lengkapi semua data teks!');
     }
     if (!fotoData.selfie || !fotoData.ktp) {
       return alert('Mohon ambil Foto Selfie dan Foto KTP!');
@@ -290,12 +269,6 @@
         document.getElementById('formContainer').classList.add('hidden');
         document.getElementById('suksesContainer').classList.remove('hidden');
         document.getElementById('namaSukses').innerText = nama;
-
-        document.getElementById('badgeFoto').src = fotoData.selfie;
-        document.getElementById('badgeNama').innerText = nama;
-        document.getElementById('badgePic').innerText = pic;
-        document.getElementById('badgeDept').innerText = dept;
-        document.getElementById('badgeTanggal').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
       } else {
         alert('Gagal menyimpan data.');
         btn.disabled = false;
