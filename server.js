@@ -1,3 +1,5 @@
+process.env.TZ = 'Asia/Jakarta'; // SET ZONA WAKTU KE WIB
+
 const express = require('express');
 const session = require('express-session');
 const ExcelJS = require('exceljs');
@@ -58,8 +60,9 @@ app.post('/api/simpan', (req, res) => {
     }
 
     const now = new Date();
-    const tanggal = now.toISOString().split('T')[0];
-    const hari = now.toLocaleDateString('id-ID', { weekday: 'long' });
+    const tanggal = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }); // YYYY-MM-DD
+    const hari = now.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'Asia/Jakarta' });
+    const waktuLengkap = now.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
 
     const stmt = db.prepare(`
       INSERT INTO tamu (tanggal, hari, nama, nik, pic, departemen, keperluan, foto_selfie, foto_ktp)
@@ -73,7 +76,7 @@ app.post('/api/simpan', (req, res) => {
     const linkSurat = `${BASE_URL}/lihat.html?id=${idTamuBaru}`;
 
     if (karyawan && karyawan.no_wa && FONNTE_TOKEN !== 'MASUKKAN_TOKEN_FONNTE_DISINI') {
-      const pesan = `*NOTIFIKASI TAMU BARU*\n\nHalo *${pic}*,\nAda tamu yang ingin bertemu dengan Anda:\n\n👤 Nama: ${nama}\n🎯 Keperluan: ${keperluan}\n🕐 Waktu: ${now.toLocaleString('id-ID')}\n\nSilakan klik link berikut untuk melihat detail & surat tamu:\n${linkSurat}\n\nTamu sedang menunggu di resepsionis.`;
+      const pesan = `*NOTIFIKASI TAMU BARU*\n\nHalo *${pic}*,\nAda tamu yang ingin bertemu dengan Anda:\n\n👤 Nama: ${nama}\n🎯 Keperluan: ${keperluan}\n🕐 Waktu: ${waktuLengkap}\n\nSilakan klik link berikut untuk melihat detail & surat tamu:\n${linkSurat}\n\nTamu sedang menunggu di resepsionis.`;
       
       axios.post('https://api.fonnte.com/send', {
         target: karyawan.no_wa,
@@ -170,7 +173,7 @@ app.post('/api/checkout/:id', cekLogin, (req, res) => {
     if (!tamu) return res.status(404).json({ error: 'Tamu tidak ditemukan' });
     if (tamu.checkout_at) return res.status(400).json({ error: 'Tamu sudah checkout' });
 
-    db.prepare('UPDATE tamu SET checkout_at = CURRENT_TIMESTAMP WHERE id = ?').run(id);
+    db.prepare("UPDATE tamu SET checkout_at = datetime('now', 'localtime') WHERE id = ?").run(id);
     res.json({ success: true, message: `${tamu.nama} telah checkout` });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -232,8 +235,8 @@ app.get('/api/export', cekLogin, async (req, res) => {
       worksheet.addRow({
         no: index + 1, tanggal: row.tanggal, hari: row.hari, nama: row.nama, nik: row.nik,
         pic: row.pic, departemen: row.departemen, keperluan: row.keperluan,
-        checkin_at: new Date(row.checkin_at).toLocaleString('id-ID'),
-        checkout_at: row.checkout_at ? new Date(row.checkout_at).toLocaleString('id-ID') : '-'
+        checkin_at: row.checkin_at ? new Date(row.checkin_at.replace(' ', 'T')).toLocaleString('id-ID') : '-',
+        checkout_at: row.checkout_at ? new Date(row.checkout_at.replace(' ', 'T')).toLocaleString('id-ID') : '-'
       });
     });
 
