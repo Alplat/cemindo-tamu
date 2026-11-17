@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detail Tamu - Cemindo</title>
+<style>
+  :root { --merah: #C00000; --bg-body: #F0F2F5; --bg-card: #FFFFFF; --teks: #333; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+  
+  .card { 
+    background: var(--bg-card); width: 100%; max-width: 400px; 
+    border-radius: 20px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  }
+  .header { background: var(--merah); padding: 25px; text-align: center; color: white; }
+  .header img { height: 50px; background: white; padding: 5px; border-radius: 8px; margin-bottom: 10px; }
+  .header h2 { font-size: 18px; margin: 0; }
+  
+  .content { padding: 30px; text-align: center; }
+  .foto { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--merah); margin: 0 auto 20px auto; display: block; }
+  
+  .nama { font-size: 22px; font-weight: 800; color: var(--teks); margin-bottom: 5px; }
+  .keperluan { font-size: 14px; color: #666; margin-bottom: 25px; }
+  
+  .detail-box { background: #F8FAFC; border-radius: 12px; padding: 20px; text-align: left; margin-bottom: 20px; }
+  .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ddd; font-size: 14px; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row span:first-child { color: #666; }
+  .detail-row span:last-child { font-weight: bold; color: var(--teks); }
+  
+  .status-badge { display: inline-block; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-top: 10px; }
+  .status-in { background: #FEE2E2; color: #B91C1C; }
+  .status-out { background: #D1FAE5; color: #047857; }
+</style>
+</head>
+<body>
+
+<div class="card" id="cardContent" style="display: none;">
+  <div class="header">
+    <img src="/logo.png" alt="Logo">
+    <h2>PT. CEMINDO GEMILANG</h2>
+  </div>
+  <div class="content">
+    <img id="fotoTamu" class="foto" src="" alt="Foto Tamu">
+    <div class="nama" id="namaTamu">Loading...</div>
+    <div class="keperluan" id="keperluanTamu">-</div>
+    
+    <div class="detail-box">
+      <div class="detail-row"><span>NIK</span><span id="nikTamu">-</span></div>
+      <div class="detail-row"><span>PIC Dituju</span><span id="picTamu">-</span></div>
+      <div class="detail-row"><span>Departemen</span><span id="deptTamu">-</span></div>
+      <div class="detail-row"><span>Waktu Masuk</span><span id="waktuTamu">-</span></div>
+    </div>
+    
+    <div id="statusBox">
+      <div class="status-badge status-in">Sedang Di Dalam</div>
+    </div>
+  </div>
+</div>
+
+<div id="errorMsg" style="display:none; text-align:center; color:red; font-weight:bold;">
+  Data tamu tidak ditemukan.
+</div>
+
+<script>
+  // Ambil ID tamu dari URL (contoh: lihat.html?id=5)
+  const urlParams = new URLSearchParams(window.location.search);
+  const idTamu = urlParams.get('id');
+
+  if (idTamu) {
+    fetch(`/api/tamu/${idTamu}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Tidak ditemukan');
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('cardContent').style.display = 'block';
+        document.getElementById('fotoTamu').src = `/uploads/${data.foto_selfie}`;
+        document.getElementById('namaTamu').innerText = data.nama;
+        document.getElementById('keperluanTamu').innerText = `Keperluan: ${data.keperluan}`;
+        document.getElementById('nikTamu').innerText = data.nik;
+        document.getElementById('picTamu').innerText = data.pic;
+        document.getElementById('deptTamu').innerText = data.departemen;
+        document.getElementById('waktuTamu').innerText = new Date(data.checkin_at).toLocaleString('id-ID');
+        
+        if (data.checkout_at) {
+          document.getElementById('statusBox').innerHTML = `
+            <div class="status-badge status-out">Selesai (Checkout)</div>
+            <div style="font-size:12px; color:#666; margin-top:5px;">Keluar: ${new Date(data.checkout_at).toLocaleString('id-ID')}</div>
+          `;
+        }
+      })
+      .catch(err => {
+        document.getElementById('errorMsg').style.display = 'block';
+      });
+  } else {
+    document.getElementById('errorMsg').style.display = 'block';
+  }
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const ExcelJS = require('exceljs');
-const axios = require('axios'); // Library untuk kirim WA
+const axios = require('axios');
 const db = require('./database');
 const path = require('path');
 const fs = require('fs');
@@ -9,8 +9,9 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// KONFIGURASI WHATSAPP (GANTI DENGAN TOKEN FONNTE KAMU)
+// KONFIGURASI
 const FONNTE_TOKEN = process.env.FONNTE_TOKEN || 'MASUKKAN_TOKEN_FONNTE_DISINI';
+const BASE_URL = process.env.BASE_URL || 'https://cemindo-tamu-production.up.railway.app'; // GANTI DENGAN URL RAILWAY KAMU
 
 if (!fs.existsSync('public/uploads')) {
   fs.mkdirSync('public/uploads', { recursive: true });
@@ -26,7 +27,9 @@ app.use(session({
 
 app.use(express.static('public'));
 
-// API: Ambil Daftar Karyawan (Untuk Dropdown di Form)
+// ==========================================
+// API PUBLIK (TAMU & KARYAWAN)
+// ==========================================
 app.get('/api/karyawan', (req, res) => {
   try {
     const data = db.prepare('SELECT nama, departemen FROM karyawan ORDER BY nama ASC').all();
@@ -36,8 +39,7 @@ app.get('/api/karyawan', (req, res) => {
   }
 });
 
-// API: Simpan Tamu & Kirim WA
-app.post('/api/simpan', async (req, res) => {
+app.post('/api/simpan', (req, res) => {
   try {
     const { nama, nik, pic, departemen, keperluan, foto_selfie, foto_ktp } = req.body;
     
@@ -63,13 +65,15 @@ app.post('/api/simpan', async (req, res) => {
       INSERT INTO tamu (tanggal, hari, nama, nik, pic, departemen, keperluan, foto_selfie, foto_ktp)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    stmt.run(tanggal, hari, nama, nik, pic, departemen, keperluan, fileNameSelfie, fileNameKtp);
+    const info = stmt.run(tanggal, hari, nama, nik, pic, departemen, keperluan, fileNameSelfie, fileNameKtp);
+    const idTamuBaru = info.lastInsertRowid;
 
     // --- KIRIM NOTIFIKASI WHATSAPP KE PIC ---
     const karyawan = db.prepare('SELECT no_wa FROM karyawan WHERE nama = ?').get(pic);
-    
+    const linkSurat = `${BASE_URL}/lihat.html?id=${idTamuBaru}`;
+
     if (karyawan && karyawan.no_wa && FONNTE_TOKEN !== 'MASUKKAN_TOKEN_FONNTE_DISINI') {
-      const pesan = `*NOTIFIKASI TAMU BARU*\n\nHalo *${pic}*,\nAda tamu yang ingin bertemu dengan Anda:\n\n👤 Nama: ${nama}\n🏢 Instansi: -\n🎯 Keperluan: ${keperluan}\n🕐 Waktu: ${now.toLocaleString('id-ID')}\n\nTamu sedang menunggu di resepsionis.`;
+      const pesan = `*NOTIFIKASI TAMU BARU*\n\nHalo *${pic}*,\nAda tamu yang ingin bertemu dengan Anda:\n\n👤 Nama: ${nama}\n🎯 Keperluan: ${keperluan}\n🕐 Waktu: ${now.toLocaleString('id-ID')}\n\nSilakan klik link berikut untuk melihat detail & surat tamu:\n${linkSurat}\n\nTamu sedang menunggu di resepsionis.`;
       
       axios.post('https://api.fonnte.com/send', {
         target: karyawan.no_wa,
@@ -80,15 +84,26 @@ app.post('/api/simpan', async (req, res) => {
       }).catch(err => console.error("Gagal kirim WA:", err.message));
     }
 
-    res.json({ success: true });
+    res.json({ success: true, id: idTamuBaru });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
+// API: Ambil Detail Tamu untuk Halaman Lihat (Publik)
+app.get('/api/tamu/:id', (req, res) => {
+  try {
+    const data = db.prepare('SELECT * FROM tamu WHERE id = ?').get(req.params.id);
+    if (!data) return res.status(404).json({ error: 'Tamu tidak ditemukan' });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ==========================================
-// API UNTUK ADMIN (Sama seperti sebelumnya)
+// API UNTUK ADMIN
 // ==========================================
 function cekLogin(req, res, next) {
   if (req.session.admin) next();
@@ -110,6 +125,7 @@ app.post('/api/logout', (req, res) => {
   res.json({ success: true });
 });
 
+// API Data Admin (Search & Pagination)
 app.get('/api/data', cekLogin, (req, res) => {
   try {
     const { filter_type, bulan, tanggal, search, page, limit } = req.query;
@@ -146,6 +162,7 @@ app.get('/api/data', cekLogin, (req, res) => {
   }
 });
 
+// API Checkout
 app.post('/api/checkout/:id', cekLogin, (req, res) => {
   try {
     const { id } = req.params;
@@ -160,6 +177,7 @@ app.post('/api/checkout/:id', cekLogin, (req, res) => {
   }
 });
 
+// API Statistik Grafik
 app.get('/api/stats', cekLogin, (req, res) => {
   try {
     const queryHarian = `SELECT tanggal, COUNT(*) as jumlah FROM tamu GROUP BY tanggal ORDER BY tanggal DESC LIMIT 7`;
@@ -172,6 +190,7 @@ app.get('/api/stats', cekLogin, (req, res) => {
   }
 });
 
+// Export Excel
 app.get('/api/export', cekLogin, async (req, res) => {
   try {
     const { filter_type, bulan, tanggal } = req.query;
@@ -227,9 +246,11 @@ app.get('/api/export', cekLogin, async (req, res) => {
   }
 });
 
+// Routing Halaman
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/input', (req, res) => res.sendFile(path.join(__dirname, 'public', 'form.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/lihat.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'lihat.html')));
 
 app.listen(PORT, () => {
   console.log(`✅ Server berjalan di port ${PORT}`);
