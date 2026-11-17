@@ -5,28 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formulir Tamu - Cemindo</title>
 <style>
-  /* (Gunakan CSS yang sama seperti sebelumnya, saya persingkat di sini) */
   :root { --merah: #C00000; --bg-body: #F0F2F5; --bg-card: #FFFFFF; --bg-input: #FAFAFA; --border: #E2E8F0; --teks-utama: #333333; --teks-label: #475569; }
   body.dark-mode { --bg-body: #121212; --bg-card: #1E1E1E; --bg-input: #2D2D2D; --border: #404040; --teks-utama: #F1F1F1; --teks-label: #A0A0A0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
   body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); min-height: 100vh; padding: 20px; color: var(--teks-utama); transition: 0.4s; }
-  .container { max-width: 550px; margin: 20px auto; background: var(--bg-card); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+  
+  .theme-toggle { position: fixed; top: 20px; right: 20px; background: var(--bg-card); border: 2px solid var(--border); font-size: 20px; padding: 10px; border-radius: 50%; cursor: pointer; transition: 0.3s; z-index: 100; }
+  
+  .container { max-width: 550px; margin: 20px auto; background: var(--bg-card); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideUp 0.6s ease-out; }
   .header-form { text-align: center; margin-bottom: 30px; }
   .header-form img { max-width: 130px; margin-bottom: 15px; }
   .header-form h2 { color: var(--merah); font-size: 22px; font-weight: 800; }
+  
   .form-group { margin-bottom: 20px; }
   label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--teks-label); }
   input, select, textarea { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 14px; color: var(--teks-utama); transition: 0.3s; background: var(--bg-input); }
   input:focus, select:focus, textarea:focus { border-color: var(--merah); background: var(--bg-card); outline: none; }
+  
+  /* Style saat dropdown disabled */
+  select:disabled, input:disabled { background: #e9ecef; cursor: not-allowed; color: #999; }
+  body.dark-mode select:disabled, body.dark-mode input:disabled { background: #1a1a1a; }
+
   .foto-box { display: flex; gap: 15px; }
   .foto-item { flex: 1; text-align: center; border: 2px dashed var(--border); padding: 20px; border-radius: 12px; cursor: pointer; background: var(--bg-input); }
   .foto-item img { width: 100%; height: 120px; object-fit: cover; display: none; border-radius: 8px; margin-bottom: 10px; }
   .foto-item span { font-size: 13px; color: var(--teks-label); font-weight: 600; display: block; }
+  
   .btn-submit { width: 100%; background: var(--merah); color: #fff; border: none; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; }
   .hidden { display: none !important; }
+  
+  /* Sukses & Print */
   .sukses-box { text-align: center; padding: 60px 20px; }
   .sukses-icon { font-size: 90px; line-height: 1; margin-bottom: 20px; }
-  .btn-print { background: var(--merah); color: #fff; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 15px; }
+  .btn-print { background: var(--merah); color: #fff; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
   #badgeArea { display: none; }
   @media print {
     body * { visibility: hidden; }
@@ -47,7 +60,7 @@
 </head>
 <body>
 
-  <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" style="position:fixed; top:20px; right:20px; background:var(--bg-card); border:2px solid var(--border); font-size:20px; padding:10px; border-radius:50%; cursor:pointer;">🌙</button>
+  <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
 
   <div class="container" id="formContainer">
     <div class="header-form">
@@ -64,18 +77,26 @@
       <input type="text" id="nik" placeholder="Masukkan NIK" required>
     </div>
 
-    <!-- UBAH INPUT PIC MENJADI DROPDOWN -->
+    <!-- 1. PILIH DEPARTEMEN DULU -->
     <div class="form-group">
-      <label>PIC yang Dituju *</label>
-      <select id="pic" onchange="ubahDepartemen()" required>
-        <option value="">-- Pilih Karyawan --</option>
+      <label>Departemen yang Dituju *</label>
+      <select id="departemen" onchange="filterPIC()" required>
+        <option value="">-- Pilih Departemen --</option>
+        <option value="HRD">HRD</option>
+        <option value="Produksi">Produksi</option>
+        <option value="IT">IT</option>
+        <option value="Finance">Finance</option>
+        <option value="Logistik">Logistik</option>
+        <option value="Lainnya">Lainnya</option>
       </select>
     </div>
 
+    <!-- 2. PILIH PIC (BARU AKTIF SETELAH DEPT DIPILIH) -->
     <div class="form-group">
-      <label>Departemen *</label>
-      <!-- Departemen akan terisi otomatis dari pilihan PIC -->
-      <input type="text" id="departemen" placeholder="Terisi otomatis" readonly style="background: #eee; cursor: not-allowed;">
+      <label>PIC yang Dituju *</label>
+      <select id="pic" required disabled>
+        <option value="">-- Pilih Departemen Terlebih Dahulu --</option>
+      </select>
     </div>
 
     <div class="form-group">
@@ -104,7 +125,7 @@
     <button onclick="simpanData()" id="btnSimpan" class="btn-submit">Kirim Data Registrasi</button>
   </div>
 
-  <!-- Tampilan Sukses & Badge (Sama seperti sebelumnya) -->
+  <!-- Sukses Box & Badge Print -->
   <div class="container sukses-box hidden" id="suksesContainer">
     <div class="sukses-icon">✅</div>
     <h2 style="margin-bottom:10px;">Registrasi Berhasil!</h2>
@@ -156,37 +177,45 @@
     document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
   }
 
-  // --- AMBIL DATA KARYAWAN UNTUK DROPDOWN ---
+  // --- AMBIL DATA KARYAWAN DARI API ---
   let dataKaryawan = [];
   
   window.onload = async () => {
     try {
       const res = await fetch('/api/karyawan');
       dataKaryawan = await res.json();
-      
-      const selectPic = document.getElementById('pic');
-      dataKaryawan.forEach(k => {
-        const option = document.createElement('option');
-        option.value = k.nama;
-        option.text = `${k.nama} (${k.departemen})`;
-        option.dataset.dept = k.departemen;
-        selectPic.appendChild(option);
-      });
     } catch (err) {
       console.error("Gagal load karyawan:", err);
     }
   };
 
-  // Otomatis isi departemen saat PIC dipilih
-  function ubahDepartemen() {
-    const select = document.getElementById('pic');
-    const selectedOption = select.options[select.selectedIndex];
-    const deptInput = document.getElementById('departemen');
+  // --- LOGIKA FILTER DEPARTEMEN KE PIC ---
+  function filterPIC() {
+    const deptTerpilih = document.getElementById('departemen').value;
+    const selectPic = document.getElementById('pic');
     
-    if (selectedOption.value) {
-      deptInput.value = selectedOption.dataset.dept;
+    // Reset dropdown PIC
+    selectPic.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+    
+    if (deptTerpilih) {
+      // Filter karyawan berdasarkan departemen yang dipilih
+      const karyawanFiltered = dataKaryawan.filter(k => k.departemen === deptTerpilih);
+      
+      if (karyawanFiltered.length > 0) {
+        karyawanFiltered.forEach(k => {
+          const option = document.createElement('option');
+          option.value = k.nama;
+          option.text = k.nama;
+          selectPic.appendChild(option);
+        });
+        selectPic.disabled = false; // Aktifkan dropdown PIC
+      } else {
+        selectPic.innerHTML = '<option value="">-- Tidak ada karyawan di dept ini --</option>';
+        selectPic.disabled = true;
+      }
     } else {
-      deptInput.value = '';
+      selectPic.innerHTML = '<option value="">-- Pilih Departemen Terlebih Dahulu --</option>';
+      selectPic.disabled = true;
     }
   }
 
@@ -234,12 +263,12 @@
   async function simpanData() {
     const nama = document.getElementById('nama').value;
     const nik = document.getElementById('nik').value;
+    const dept = document.getElementById('departemen').value;
     const pic = document.getElementById('pic').value;
-    const departemen = document.getElementById('departemen').value;
     const keperluan = document.getElementById('keperluan').value;
 
-    if (!nama || !nik || !pic || !keperluan) {
-      return alert('Mohon lengkapi semua data teks!');
+    if (!nama || !nik || !dept || !pic || !keperluan) {
+      return alert('Mohon lengkapi semua data teks (Departemen & PIC wajib dipilih)!');
     }
     if (!fotoData.selfie || !fotoData.ktp) {
       return alert('Mohon ambil Foto Selfie dan Foto KTP!');
@@ -253,7 +282,10 @@
       const res = await fetch('/api/simpan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nama, nik, pic, departemen, keperluan, foto_selfie: fotoData.selfie, foto_ktp: fotoData.ktp })
+        body: JSON.stringify({ 
+          nama, nik, pic, departemen: dept, keperluan, 
+          foto_selfie: fotoData.selfie, foto_ktp: fotoData.ktp 
+        })
       });
 
       if (res.ok) {
@@ -264,7 +296,7 @@
         document.getElementById('badgeFoto').src = fotoData.selfie;
         document.getElementById('badgeNama').innerText = nama;
         document.getElementById('badgePic').innerText = pic;
-        document.getElementById('badgeDept').innerText = departemen;
+        document.getElementById('badgeDept').innerText = dept;
         document.getElementById('badgeTanggal').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
       } else {
         alert('Gagal menyimpan data.');
