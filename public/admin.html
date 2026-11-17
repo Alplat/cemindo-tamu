@@ -367,7 +367,7 @@
     if (newPage >= 1) loadData(newPage);
   }
 
-  // --- FUNGSI CETAK BADGE (SUDAH DIPERBAIKI DENGAN ERROR HANDLING) ---
+  // --- FUNGSI CETAK BADGE (SUDAH DIPERBAIKI DENGAN CADANGAN TANGGAL) ---
   function cetakBadge(id) {
     fetch(`/api/tamu/${id}`)
       .then(res => res.json())
@@ -377,22 +377,33 @@
         document.getElementById('badgePic').innerText = data.pic;
         document.getElementById('badgeDept').innerText = data.departemen;
         
-        // --- PENGAMAN TANGGAL ---
-        let tgl = 'Tanggal tidak tersedia';
+        // --- LOGIKA TANGGAL CADANGAN ---
+        let tanggalFinal = '';
+        
         if (data.checkin_at) {
-          try {
-            const rawDate = data.checkin_at.replace(' ', 'T');
-            const dateObj = new Date(rawDate);
-            if (!isNaN(dateObj.getTime())) {
-              tgl = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-            }
-          } catch(e) {
-            console.error("Gagal format tanggal", e);
+          const rawDate = data.checkin_at.replace(' ', 'T');
+          const dateObj = new Date(rawDate);
+          if (!isNaN(dateObj.getTime())) {
+            tanggalFinal = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+          }
+        } 
+        
+        if (tanggalFinal === '' && data.tanggal) {
+          const rawDate = data.tanggal;
+          const dateObj = new Date(rawDate);
+          if (!isNaN(dateObj.getTime())) {
+            tanggalFinal = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+          } else {
+             tanggalFinal = data.tanggal;
           }
         }
-        document.getElementById('badgeTanggal').innerText = tgl;
 
-        // Tampilkan jendela print setelah 300ms
+        if (tanggalFinal === '') {
+            tanggalFinal = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        document.getElementById('badgeTanggal').innerText = tanggalFinal;
+
         setTimeout(() => { window.print(); }, 300);
       })
       .catch(err => alert('Gagal memuat data badge: ' + err.message));
