@@ -367,7 +367,7 @@
     if (newPage >= 1) loadData(newPage);
   }
 
-  // --- FUNGSI CETAK BADGE (FIX INVALID DATE) ---
+  // --- FUNGSI CETAK BADGE (SUDAH DIPERBAIKI DENGAN ERROR HANDLING) ---
   function cetakBadge(id) {
     fetch(`/api/tamu/${id}`)
       .then(res => res.json())
@@ -377,12 +377,22 @@
         document.getElementById('badgePic').innerText = data.pic;
         document.getElementById('badgeDept').innerText = data.departemen;
         
-        // --- PERBAIKAN TANGGAL ---
-        // Ubah format string SQLite "YYYY-MM-DD HH:MM:SS" menjadi "YYYY-MM-DDTHH:MM:SS"
-        const rawDate = data.checkin_at.replace(' ', 'T'); 
-        const tgl = new Date(rawDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        // --- PENGAMAN TANGGAL ---
+        let tgl = 'Tanggal tidak tersedia';
+        if (data.checkin_at) {
+          try {
+            const rawDate = data.checkin_at.replace(' ', 'T');
+            const dateObj = new Date(rawDate);
+            if (!isNaN(dateObj.getTime())) {
+              tgl = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            }
+          } catch(e) {
+            console.error("Gagal format tanggal", e);
+          }
+        }
         document.getElementById('badgeTanggal').innerText = tgl;
 
+        // Tampilkan jendela print setelah 300ms
         setTimeout(() => { window.print(); }, 300);
       })
       .catch(err => alert('Gagal memuat data badge: ' + err.message));
