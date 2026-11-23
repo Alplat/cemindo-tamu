@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manajemen Karyawan - Cemindo</title>
+<style>
+  :root {
+    --merah: #C00000; --bg-body: #F0F2F5; --bg-card: #FFFFFF;
+    --bg-input: #F8FAFC; --border: #E2E8F0; --teks-utama: #1E293B; --teks-sub: #475569; --header-bg: #1E293B;
+  }
+  body.dark-mode {
+    --bg-body: #121212; --bg-card: #1E1E1E; --bg-input: #2D2D2D;
+    --border: #404040; --teks-utama: #F1F1F1; --teks-sub: #A0A0A0; --header-bg: #0F172A;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI', sans-serif; background:var(--bg-body); color:var(--teks-utama); transition: 0.4s; }
+  
+  .header { background:var(--header-bg); color:#fff; padding:15px 30px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+  .header-left { display:flex; align-items:center; gap:15px; }
+  .header img { height: 40px; background:#fff; padding:5px; border-radius:8px; }
+  .header h1 { margin:0; font-size:18px; font-weight: 700; }
+  .btn-back { background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.3); padding:8px 16px; border-radius:8px; cursor:pointer; text-decoration:none; font-weight:bold; font-size:13px; transition:0.3s; }
+  .btn-back:hover { background:rgba(255,255,255,0.1); }
+
+  .container { padding:30px; max-width:1000px; margin:0 auto; }
+  
+  .toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .btn-add { background:#16A34A; color:#fff; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer; transition:0.3s; }
+  .btn-add:hover { background:#15803D; transform:translateY(-2px); }
+
+  .table-responsive { background:var(--bg-card); border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.03); }
+  table { width:100%; border-collapse:collapse; }
+  th, td { padding:15px; text-align:left; border-bottom:1px solid var(--border); font-size:14px; }
+  th { background:var(--bg-input); color:var(--teks-sub); font-weight:700; }
+  tr:hover { background:var(--bg-input); }
+  
+  .btn-edit { background:#F59E0B; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; margin-right:5px; }
+  .btn-delete { background:#EF4444; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; }
+
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:99; backdrop-filter: blur(4px); }
+  .modal.show { display:flex; }
+  .modal-content { background:var(--bg-card); padding:30px; border-radius:16px; width:90%; max-width:400px; box-shadow:0 20px 50px rgba(0,0,0,0.2); }
+  .modal-content h3 { margin-bottom:20px; color:var(--teks-utama); }
+  .form-group { margin-bottom:15px; }
+  .form-group label { display:block; font-size:13px; font-weight:600; margin-bottom:5px; color:var(--teks-sub); }
+  .form-group input, .form-group select { width:100%; padding:12px; border:2px solid var(--border); border-radius:8px; background:var(--bg-input); color:var(--teks-utama); font-family:inherit; }
+  .form-group input:focus, .form-group select:focus { border-color:var(--merah); outline:none; background:var(--bg-card); }
+  
+  .modal-actions { display:flex; gap:10px; margin-top:25px; }
+  .btn-save { flex:1; background:var(--merah); color:#fff; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; }
+  .btn-cancel { flex:1; background:var(--bg-input); color:var(--teks-utama); border:1px solid var(--border); padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-left">
+      <img src="/logo.png" alt="Logo">
+      <h1>Manajemen Karyawan</h1>
+    </div>
+    <a href="/admin" class="btn-back">⬅️ Kembali ke Dashboard</a>
+  </div>
+
+  <div class="container">
+    <div class="toolbar">
+      <h2 style="color:var(--teks-utama); font-size:18px;">Daftar Karyawan & PIC</h2>
+      <button class="btn-add" onclick="bukaModal()">+ Tambah Karyawan</button>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Karyawan</th>
+            <th>Departemen</th>
+            <th>No. WhatsApp</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tabelKaryawan"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL FORM -->
+  <div class="modal" id="modalForm">
+    <div class="modal-content">
+      <h3 id="modalTitle">Tambah Karyawan</h3>
+      <input type="hidden" id="editId">
+      
+      <div class="form-group">
+        <label>Nama Lengkap *</label>
+        <input type="text" id="inputNama" placeholder="Contoh: Bpk. Budi Santoso">
+      </div>
+      <div class="form-group">
+        <label>Departemen *</label>
+        <select id="inputDept">
+          <option value="">-- Pilih Departemen --</option>
+          <option value="HRD">HRD</option>
+          <option value="Produksi">Produksi</option>
+          <option value="IT">IT</option>
+          <option value="Finance">Finance</option>
+          <option value="Logistik">Logistik</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>No. WhatsApp (Opsional)</label>
+        <input type="text" id="inputWa" placeholder="Contoh: 08123456789">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="tutupModal()">Batal</button>
+        <button class="btn-save" onclick="simpanKaryawan()">Simpan Data</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  window.onload = async () => {
+    const res = await fetch('/api/admin/karyawan');
+    if (!res.ok) {
+      alert('Akses ditolak. Silakan login terlebih dahulu.');
+      window.location.href = '/admin';
+      return;
+    }
+    loadKaryawan();
+  };
+
+  async function loadKaryawan() {
+    const res = await fetch('/api/admin/karyawan');
+    const data = await res.json();
+    const tbody = document.getElementById('tabelKaryawan');
+    tbody.innerHTML = '';
+
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:var(--teks-sub);">Belum ada data karyawan.</td></tr>';
+      return;
+    }
+
+    data.forEach((k, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td><b>${k.nama}</b></td>
+        <td><span style="background:var(--bg-input); padding:4px 10px; border-radius:5px; font-size:12px; font-weight:bold;">${k.departemen}</span></td>
+        <td>${k.no_wa || '-'}</td>
+        <td>
+          <button class="btn-edit" onclick="editKaryawan(${k.id}, '${k.nama}', '${k.departemen}', '${k.no_wa}')">Edit</button>
+          <button class="btn-delete" onclick="hapusKaryawan(${k.id}, '${k.nama}')">Hapus</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function bukaModal() {
+    document.getElementById('modalTitle').innerText = 'Tambah Karyawan';
+    document.getElementById('editId').value = '';
+    document.getElementById('inputNama').value = '';
+    document.getElementById('inputDept').value = '';
+    document.getElementById('inputWa').value = '';
+    document.getElementById('modalForm').classList.add('show');
+  }
+
+  function editKaryawan(id, nama, dept, wa) {
+    document.getElementById('modalTitle').innerText = 'Edit Data Karyawan';
+    document.getElementById('editId').value = id;
+    document.getElementById('inputNama').value = nama;
+    document.getElementById('inputDept').value = dept;
+    document.getElementById('inputWa').value = (wa === 'null' || !wa) ? '' : wa;
+    document.getElementById('modalForm').classList.add('show');
+  }
+
+  function tutupModal() {
+    document.getElementById('modalForm').classList.remove('show');
+  }
+
+  async function simpanKaryawan() {
+    const id = document.getElementById('editId').value;
+    const nama = document.getElementById('inputNama').value;
+    const departemen = document.getElementById('inputDept').value;
+    const no_wa = document.getElementById('inputWa').value;
+
+    if (!nama || !departemen) {
+      return alert('Nama dan Departemen wajib diisi!');
+    }
+
+    const url = id ? `/api/admin/karyawan/${id}` : '/api/admin/karyawan';
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nama, departemen, no_wa })
+      });
+      const result = await res.json();
+      
+      if (res.ok) {
+        alert('✅ ' + result.message);
+        tutupModal();
+        loadKaryawan();
+      } else {
+        alert('❌ ' + result.error);
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  async function hapusKaryawan(id, nama) {
+    if (!confirm(`Yakin ingin menghapus ${nama} dari daftar?`)) return;
+    try {
+      const res = await fetch(`/api/admin/karyawan/${id}`, { method: 'DELETE' });
+      const result = await res.json();
+      if (res.ok) {
+        alert('✅ ' + result.message);
+        loadKaryawan();
+      } else {
+        alert('❌ ' + result.error);
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+</script>
+</body>
+</html>

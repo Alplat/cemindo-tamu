@@ -30,7 +30,15 @@ app.use(session({
 app.use(express.static('public'));
 
 // ==========================================
-// API PUBLIK (TAMU & KARYAWAN)
+// MIDDLEWARE CEK LOGIN
+// ==========================================
+function cekLogin(req, res, next) {
+  if (req.session.admin) next();
+  else res.status(401).json({ error: 'Akses ditolak. Silakan login.' });
+}
+
+// ==========================================
+// API PUBLIK (TAMU)
 // ==========================================
 app.get('/api/karyawan', (req, res) => {
   try {
@@ -60,7 +68,7 @@ app.post('/api/simpan', (req, res) => {
     }
 
     const now = new Date();
-    const tanggal = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }); // YYYY-MM-DD
+    const tanggal = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
     const hari = now.toLocaleDateString('id-ID', { weekday: 'long', timeZone: 'Asia/Jakarta' });
     const waktuLengkap = now.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
 
@@ -106,13 +114,8 @@ app.get('/api/tamu/:id', (req, res) => {
 });
 
 // ==========================================
-// API UNTUK ADMIN
+// API ADMIN (LOGIN & DATA TAMU)
 // ==========================================
-function cekLogin(req, res, next) {
-  if (req.session.admin) next();
-  else res.status(401).json({ error: 'Akses ditolak. Silakan login.' });
-}
-
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
   if (username === 'admin' && password === 'admin123') {
@@ -128,7 +131,6 @@ app.post('/api/logout', (req, res) => {
   res.json({ success: true });
 });
 
-// API Data Admin (Search & Pagination)
 app.get('/api/data', cekLogin, (req, res) => {
   try {
     const { filter_type, bulan, tanggal, search, page, limit } = req.query;
@@ -165,7 +167,6 @@ app.get('/api/data', cekLogin, (req, res) => {
   }
 });
 
-// API Checkout
 app.post('/api/checkout/:id', cekLogin, (req, res) => {
   try {
     const { id } = req.params;
@@ -180,7 +181,6 @@ app.post('/api/checkout/:id', cekLogin, (req, res) => {
   }
 });
 
-// API Statistik Grafik
 app.get('/api/stats', cekLogin, (req, res) => {
   try {
     const queryHarian = `SELECT tanggal, COUNT(*) as jumlah FROM tamu GROUP BY tanggal ORDER BY tanggal DESC LIMIT 7`;
@@ -193,7 +193,6 @@ app.get('/api/stats', cekLogin, (req, res) => {
   }
 });
 
-// Export Excel
 app.get('/api/export', cekLogin, async (req, res) => {
   try {
     const { filter_type, bulan, tanggal } = req.query;
@@ -249,10 +248,63 @@ app.get('/api/export', cekLogin, async (req, res) => {
   }
 });
 
+// ==========================================
+// API MANAJEMEN KARYAWAN (CRUD)
+// ==========================================
+app.get('/api/admin/karyawan', cekLogin, (req, res) => {
+  try {
+    const data = db.prepare('SELECT * FROM karyawan ORDER BY nama ASC').all();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/karyawan', cekLogin, (req, res) => {
+  try {
+    const { nama, departemen, no_wa } = req.body;
+    if (!nama || !departemen) return res.status(400).json({ error: 'Nama dan Departemen wajib diisi' });
+    
+    let wa = no_wa || '';
+    if (wa.startsWith('0')) wa = '62' + wa.slice(1);
+
+    db.prepare('INSERT INTO karyawan (nama, departemen, no_wa) VALUES (?, ?, ?)').run(nama, departemen, wa);
+    res.json({ success: true, message: 'Karyawan berhasil ditambahkan' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/admin/karyawan/:id', cekLogin, (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nama, departemen, no_wa } = req.body;
+    
+    let wa = no_wa || '';
+    if (wa.startsWith('0')) wa = '62' + wa.slice(1);
+
+    db.prepare('UPDATE karyawan SET nama = ?, departemen = ?, no_wa = ? WHERE id = ?').run(nama, departemen, wa, id);
+    res.json({ success: true, message: 'Data karyawan berhasil diperbarui' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/admin/karyawan/:id', cekLogin, (req, res) => {
+  try {
+    const { id } = req.params;
+    db.prepare('DELETE FROM karyawan WHERE id = ?').run(id);
+    res.json({ success: true, message: 'Karyawan berhasil dihapus' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Routing Halaman
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/input', (req, res) => res.sendFile(path.join(__dirname, 'public', 'form.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/karyawan', (req, res) => res.sendFile(path.join(__dirname, 'public', 'karyawan.html')));
 app.get('/lihat.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'lihat.html')));
 
 app.listen(PORT, () => {
