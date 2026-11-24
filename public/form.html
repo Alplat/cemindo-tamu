@@ -12,7 +12,10 @@
   @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
   body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); min-height: 100vh; padding: 20px; color: var(--teks-utama); transition: 0.4s; }
   
-  .theme-toggle { position: fixed; top: 20px; right: 20px; background: var(--bg-card); border: 2px solid var(--border); font-size: 20px; padding: 10px; border-radius: 50%; cursor: pointer; transition: 0.3s; z-index: 100; }
+  /* Tombol Toggle Bahasa & Tema */
+  .top-controls { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; }
+  .btn-control { background: var(--bg-card); border: 2px solid var(--border); font-size: 14px; padding: 10px 15px; border-radius: 10px; cursor: pointer; transition: 0.3s; font-weight: bold; color: var(--teks-utama); display: flex; align-items: center; justify-content: center; }
+  .btn-control:hover { border-color: var(--merah); transform: translateY(-2px); }
   
   .container { max-width: 550px; margin: 20px auto; background: var(--bg-card); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideUp 0.6s ease-out; }
   .header-form { text-align: center; margin-bottom: 30px; }
@@ -21,7 +24,7 @@
   
   .form-group { margin-bottom: 20px; }
   label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--teks-label); }
-  input, select, textarea { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 14px; color: var(--teks-utama); transition: 0.3s; background: var(--bg-input); }
+  input, select, textarea { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 14px; color: var(--teks-utama); transition: 0.3s; background: var(--bg-input); font-family: inherit; }
   input:focus, select:focus, textarea:focus { border-color: var(--merah); background: var(--bg-card); outline: none; }
   
   select:disabled { background: #e9ecef; cursor: not-allowed; color: #999; }
@@ -32,7 +35,8 @@
   .foto-item img { width: 100%; height: 120px; object-fit: cover; display: none; border-radius: 8px; margin-bottom: 10px; }
   .foto-item span { font-size: 13px; color: var(--teks-label); font-weight: 600; display: block; }
   
-  .btn-submit { width: 100%; background: var(--merah); color: #fff; border: none; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; }
+  .btn-submit { width: 100%; background: var(--merah); color: #fff; border: none; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+  .btn-submit:hover { background: #900000; }
   .hidden { display: none !important; }
   
   /* Sukses Box */
@@ -50,26 +54,29 @@
 </head>
 <body>
 
-  <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+  <!-- Tombol Kontrol (Bahasa & Tema) -->
+  <div class="top-controls">
+    <button class="btn-control" id="langBtn" onclick="toggleLanguage()">🇬🇧 EN</button>
+    <button class="btn-control" id="themeBtn" onclick="toggleTheme()">🌙</button>
+  </div>
 
   <div class="container" id="formContainer">
     <div class="header-form">
       <img src="/logo.png" alt="Logo Cemindo">
-      <h2>Registrasi Tamu</h2>
+      <h2 id="titleText">Registrasi Tamu</h2>
     </div>
     
     <div class="form-group">
-      <label>Nama Lengkap *</label>
+      <label id="lblNama">Nama Lengkap *</label>
       <input type="text" id="nama" placeholder="Masukkan nama lengkap" required>
     </div>
     <div class="form-group">
-      <label>No ID Card / NIK *</label>
+      <label id="lblNik">No ID Card / NIK *</label>
       <input type="text" id="nik" placeholder="Masukkan NIK" required>
     </div>
 
-    <!-- 1. PILIH DEPARTEMEN DULU -->
     <div class="form-group">
-      <label>Departemen yang Dituju *</label>
+      <label id="lblDept">Departemen yang Dituju *</label>
       <select id="departemen" onchange="filterPIC()" required>
         <option value="">-- Pilih Departemen --</option>
         <option value="HRD">HRD</option>
@@ -81,21 +88,20 @@
       </select>
     </div>
 
-    <!-- 2. PILIH PIC -->
     <div class="form-group">
-      <label>PIC yang Dituju *</label>
+      <label id="lblPic">PIC yang Dituju *</label>
       <select id="pic" required disabled>
         <option value="">-- Pilih Departemen Terlebih Dahulu --</option>
       </select>
     </div>
 
     <div class="form-group">
-      <label>Keperluan *</label>
+      <label id="lblKeperluan">Keperluan *</label>
       <textarea id="keperluan" rows="3" placeholder="Contoh: Meeting, Interview, Kirim Barang"></textarea>
     </div>
     
     <div class="form-group">
-      <label>Foto Selfie *</label>
+      <label id="lblSelfie">Foto Selfie *</label>
       <div class="foto-box">
         <div class="foto-item" onclick="ambilFoto('selfie')">
           <img id="preview_selfie">
@@ -104,7 +110,7 @@
       </div>
     </div>
     <div class="form-group">
-      <label>Foto KTP / ID Card *</label>
+      <label id="lblKtp">Foto KTP / ID Card *</label>
       <div class="foto-box">
         <div class="foto-item" onclick="ambilFoto('ktp')">
           <img id="preview_ktp">
@@ -115,18 +121,17 @@
     <button onclick="simpanData()" id="btnSimpan" class="btn-submit">Kirim Data Registrasi</button>
   </div>
 
-  <!-- Tampilan Sukses dengan Tombol Back -->
+  <!-- Tampilan Sukses -->
   <div class="container sukses-box hidden" id="suksesContainer">
     <div class="sukses-icon">✅</div>
-    <h2 style="margin-bottom:10px;">Registrasi Berhasil!</h2>
-    <p style="color:var(--teks-label); line-height:1.6; margin-bottom: 25px;">
+    <h2 style="margin-bottom:10px;" id="suksesTitle">Registrasi Berhasil!</h2>
+    <p style="color:var(--teks-label); line-height:1.6; margin-bottom: 25px;" id="suksesText">
       Terima kasih <b id="namaSukses"></b>.<br>
       Notifikasi WA telah dikirim ke PIC.<br>
-      Silakan menunggu di resepsionis untuk pengambilan kartu tamu.
+      Silakan menunggu di resepsionis.
     </p>
     
-    <!-- TOMBOL KEMBALI YANG JELAS -->
-    <a href="/" class="btn-back">
+    <a href="/" class="btn-back" id="btnKembali">
       ⬅️ Kembali ke Halaman Depan
     </a>
   </div>
@@ -138,13 +143,117 @@
       <video id="video" autoplay playsinline style="width:100%; border-radius:12px; background:#000;"></video>
       <canvas id="canvas" style="display:none;"></canvas>
       <div style="display:flex; gap:10px; margin-top:20px;">
-        <button onclick="tutupKamera()" style="flex:1; background:var(--bg-input); color:var(--teks-utama); border:none; padding:14px; border-radius:10px; font-weight:bold; cursor:pointer;">Batal</button>
-        <button onclick="prosesFoto()" style="flex:1; background:var(--merah); color:#fff; border:none; padding:14px; border-radius:10px; font-weight:bold; cursor:pointer;">📸 Jepret</button>
+        <button onclick="tutupKamera()" style="flex:1; background:var(--bg-input); color:var(--teks-utama); border:none; padding:14px; border-radius:10px; font-weight:bold; cursor:pointer;" id="btnBatalKamera">Batal</button>
+        <button onclick="prosesFoto()" style="flex:1; background:var(--merah); color:#fff; border:none; padding:14px; border-radius:10px; font-weight:bold; cursor:pointer;" id="btnJepret">📸 Jepret</button>
       </div>
     </div>
   </div>
 
 <script>
+  // --- LOGIKA MULTI-BAHASA ---
+  let currentLang = localStorage.getItem('lang') || 'id';
+
+  const translations = {
+    id: {
+      langBtn: "🇬🇧 EN",
+      title: "Registrasi Tamu",
+      lblNama: "Nama Lengkap *",
+      phNama: "Masukkan nama lengkap",
+      lblNik: "No ID Card / NIK *",
+      phNik: "Masukkan NIK",
+      lblDept: "Departemen yang Dituju *",
+      optDept: "-- Pilih Departemen --",
+      lblPic: "PIC yang Dituju *",
+      optPic: "-- Pilih Departemen Terlebih Dahulu --",
+      lblKeperluan: "Keperluan *",
+      phKeperluan: "Contoh: Meeting, Interview, Kirim Barang",
+      lblSelfie: "Foto Selfie *",
+      txtSelfie: "📷 Ambil Selfie",
+      lblKtp: "Foto KTP / ID Card *",
+      txtKtp: "📷 Ambil KTP",
+      btnSubmit: "Kirim Data Registrasi",
+      btnBack: "⬅️ Kembali ke Halaman Depan",
+      suksesTitle: "Registrasi Berhasil!",
+      suksesText: "Terima kasih. Notifikasi WA telah dikirim ke PIC. Silakan menunggu di resepsionis.",
+      titleKamera: "Ambil Foto",
+      btnBatal: "Batal",
+      btnJepret: "📸 Jepret"
+    },
+    en: {
+      langBtn: "🇮🇩 ID",
+      title: "Guest Registration",
+      lblNama: "Full Name *",
+      phNama: "Enter full name",
+      lblNik: "ID Card / Passport No *",
+      phNik: "Enter ID Number",
+      lblDept: "Destination Department *",
+      optDept: "-- Select Department --",
+      lblPic: "Person In Charge (PIC) *",
+      optPic: "-- Select Department First --",
+      lblKeperluan: "Purpose of Visit *",
+      phKeperluan: "Example: Meeting, Interview, Delivery",
+      lblSelfie: "Selfie Photo *",
+      txtSelfie: "📷 Take Selfie",
+      lblKtp: "ID Card / Passport Photo *",
+      txtKtp: "📷 Take ID Photo",
+      btnSubmit: "Submit Registration",
+      btnBack: "⬅️ Back to Homepage",
+      suksesTitle: "Registration Successful!",
+      suksesText: "Thank you. WhatsApp notification has been sent to the PIC. Please wait at the receptionist.",
+      titleKamera: "Take Photo",
+      btnBatal: "Cancel",
+      btnJepret: "📸 Capture"
+    }
+  };
+
+  function applyLanguage() {
+    const t = translations[currentLang];
+    document.getElementById('langBtn').innerText = t.langBtn;
+    document.getElementById('titleText').innerText = t.title;
+    document.getElementById('lblNama').innerText = t.lblNama;
+    document.getElementById('nama').placeholder = t.phNama;
+    document.getElementById('lblNik').innerText = t.lblNik;
+    document.getElementById('nik').placeholder = t.phNik;
+    document.getElementById('lblDept').innerText = t.lblDept;
+    document.getElementById('departemen').options[0].text = t.optDept;
+    
+    document.getElementById('lblPic').innerText = t.lblPic;
+    const picSelect = document.getElementById('pic');
+    if (picSelect.disabled) {
+      picSelect.options[0].text = t.optPic;
+    } else {
+      picSelect.options[0].text = currentLang === 'id' ? "-- Pilih Karyawan --" : "-- Select Employee --";
+    }
+
+    document.getElementById('lblKeperluan').innerText = t.lblKeperluan;
+    document.getElementById('keperluan').placeholder = t.phKeperluan;
+    document.getElementById('lblSelfie').innerText = t.lblSelfie;
+    
+    // Jangan timpa teks "Tersimpan" jika foto sudah diambil
+    if (document.getElementById('preview_selfie').style.display !== 'block') {
+      document.getElementById('text_selfie').innerText = t.txtSelfie;
+    }
+    document.getElementById('lblKtp').innerText = t.lblKtp;
+    if (document.getElementById('preview_ktp').style.display !== 'block') {
+      document.getElementById('text_ktp').innerText = t.txtKtp;
+    }
+    
+    document.getElementById('btnSimpan').innerText = t.btnSubmit;
+    document.getElementById('btnKembali').innerText = t.btnBack;
+    document.getElementById('suksesTitle').innerText = t.suksesTitle;
+    document.getElementById('suksesText').innerHTML = `${t.suksesText.split('.')[0]}.<br>${t.suksesText.split('.')[1]}.<br>${t.suksesText.split('.')[2] || ''}`;
+    
+    document.getElementById('titleKamera').innerText = t.titleKamera;
+    document.getElementById('btnBatalKamera').innerText = t.btnBatal;
+    document.getElementById('btnJepret').innerText = t.btnJepret;
+  }
+
+  function toggleLanguage() {
+    currentLang = currentLang === 'id' ? 'en' : 'id';
+    localStorage.setItem('lang', currentLang);
+    applyLanguage();
+  }
+
   // --- LOGIKA DARK MODE ---
   if (localStorage.getItem('theme') === 'dark') {
     document.body.classList.add('dark-mode');
@@ -160,6 +269,7 @@
   // --- AMBIL DATA KARYAWAN ---
   let dataKaryawan = [];
   window.onload = async () => {
+    applyLanguage(); // Terapkan bahasa saat halaman dimuat
     try {
       const res = await fetch('/api/karyawan');
       dataKaryawan = await res.json();
@@ -172,8 +282,9 @@
   function filterPIC() {
     const deptTerpilih = document.getElementById('departemen').value;
     const selectPic = document.getElementById('pic');
+    const t = translations[currentLang];
     
-    selectPic.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+    selectPic.innerHTML = `<option value="">${currentLang === 'id' ? '-- Pilih Karyawan --' : '-- Select Employee --'}</option>`;
     
     if (deptTerpilih) {
       const karyawanFiltered = dataKaryawan.filter(k => k.departemen === deptTerpilih);
@@ -187,11 +298,11 @@
         });
         selectPic.disabled = false;
       } else {
-        selectPic.innerHTML = '<option value="">-- Tidak ada karyawan --</option>';
+        selectPic.innerHTML = `<option value="">${currentLang === 'id' ? '-- Tidak ada karyawan --' : '-- No employee found --'}</option>`;
         selectPic.disabled = true;
       }
     } else {
-      selectPic.innerHTML = '<option value="">-- Pilih Departemen Terlebih Dahulu --</option>';
+      selectPic.innerHTML = `<option value="">${t.optPic}</option>`;
       selectPic.disabled = true;
     }
   }
@@ -203,14 +314,16 @@
 
   async function ambilFoto(jenis) {
     modeFoto = jenis;
-    document.getElementById('titleKamera').innerText = jenis === 'selfie' ? '🤳 Ambil Foto Selfie' : '🪪 Ambil Foto KTP';
+    const t = translations[currentLang];
+    document.getElementById('titleKamera').innerText = jenis === 'selfie' ? (currentLang === 'id' ? '🤳 Ambil Foto Selfie' : '🤳 Take Selfie Photo') : (currentLang === 'id' ? '🪪 Ambil Foto KTP' : '🪪 Take ID Photo');
+    
     document.getElementById('kameraModal').style.display = 'flex';
     try {
       const constraints = { video: { facingMode: jenis === 'selfie' ? 'user' : 'environment' } };
       stream = await navigator.mediaDevices.getUserMedia(constraints);
       document.getElementById('video').srcObject = stream;
     } catch (err) {
-      alert('Gagal akses kamera: ' + err.message);
+      alert('Gagal akses kamera / Camera access failed: ' + err.message);
       tutupKamera();
     }
   }
@@ -232,12 +345,13 @@
     
     document.getElementById('preview_' + modeFoto).src = dataImage;
     document.getElementById('preview_' + modeFoto).style.display = 'block';
-    document.getElementById('text_' + modeFoto).innerText = '✅ Tersimpan';
+    document.getElementById('text_' + modeFoto).innerText = currentLang === 'id' ? '✅ Tersimpan' : '✅ Saved';
     document.getElementById('text_' + modeFoto).style.color = '#16A34A';
     tutupKamera();
   }
 
   async function simpanData() {
+    const t = translations[currentLang];
     const nama = document.getElementById('nama').value;
     const nik = document.getElementById('nik').value;
     const dept = document.getElementById('departemen').value;
@@ -245,15 +359,15 @@
     const keperluan = document.getElementById('keperluan').value;
 
     if (!nama || !nik || !dept || !pic || !keperluan) {
-      return alert('Mohon lengkapi semua data teks!');
+      return alert(currentLang === 'id' ? 'Mohon lengkapi semua data teks!' : 'Please complete all text fields!');
     }
     if (!fotoData.selfie || !fotoData.ktp) {
-      return alert('Mohon ambil Foto Selfie dan Foto KTP!');
+      return alert(currentLang === 'id' ? 'Mohon ambil Foto Selfie dan Foto KTP!' : 'Please take Selfie and ID Card photos!');
     }
 
     const btn = document.getElementById('btnSimpan');
     btn.disabled = true;
-    btn.innerText = 'Menyimpan & Mengirim WA...';
+    btn.innerText = currentLang === 'id' ? 'Menyimpan...' : 'Saving...';
 
     try {
       const res = await fetch('/api/simpan', {
@@ -270,14 +384,14 @@
         document.getElementById('suksesContainer').classList.remove('hidden');
         document.getElementById('namaSukses').innerText = nama;
       } else {
-        alert('Gagal menyimpan data.');
+        alert('Gagal menyimpan data / Failed to save data.');
         btn.disabled = false;
-        btn.innerText = 'Kirim Data Registrasi';
+        btn.innerText = t.btnSubmit;
       }
     } catch (err) {
       alert('Error: ' + err.message);
       btn.disabled = false;
-      btn.innerText = 'Kirim Data Registrasi';
+      btn.innerText = t.btnSubmit;
     }
   }
 </script>
