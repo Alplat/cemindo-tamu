@@ -181,12 +181,24 @@ app.post('/api/checkout/:id', cekLogin, (req, res) => {
   }
 });
 
+// ==========================================
+// API STATISTIK UNTUK GRAFIK (DIUPDATE)
+// ==========================================
 app.get('/api/stats', cekLogin, (req, res) => {
   try {
     const queryHarian = `SELECT tanggal, COUNT(*) as jumlah FROM tamu GROUP BY tanggal ORDER BY tanggal DESC LIMIT 7`;
     const dataHarian = db.prepare(queryHarian).all().reverse(); 
-    const queryDept = `SELECT departemen, COUNT(*) as jumlah FROM tamu GROUP BY departemen`;
+
+    // HANYA AMBIL 4 DEPARTEMEN VALID (MENGHIRAUKAN 'Lainnya' DAN '-')
+    const queryDept = `
+      SELECT departemen, COUNT(*) as jumlah 
+      FROM tamu 
+      WHERE departemen NOT IN ('Lainnya', '-', '') 
+      AND departemen IS NOT NULL 
+      GROUP BY departemen
+    `;
     const dataDept = db.prepare(queryDept).all();
+    
     res.json({ harian: dataHarian, departemen: dataDept });
   } catch (err) {
     res.status(500).json({ error: err.message });
