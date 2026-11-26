@@ -78,7 +78,7 @@
   }
   
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
-    border-color: var(--merah); background: var(--bg-card); 
+    border-color: var(--merah); background: var(--bg-input); 
     outline: none; box-shadow: 0 4px 15px rgba(192,0,0,0.1);
   }
   
@@ -98,10 +98,14 @@
     pointer-events: none; transition: 0.3s ease; font-weight: 600;
   }
   
-  /* Saat input di-fokus atau ada isinya, label naik ke atas */
+  /* Saat input & textarea di-fokus atau ada isinya, label naik ke atas */
   .form-group input:focus ~ label, .form-group input:not(:placeholder-shown) ~ label,
-  .form-group textarea:focus ~ label, .form-group textarea:not(:placeholder-shown) ~ label,
-  .form-group select:focus ~ label, .form-group select:valid ~ label {
+  .form-group textarea:focus ~ label, .form-group textarea:not(:placeholder-shown) ~ label {
+    top: 6px; font-size: 10px; color: var(--merah); text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  /* Khusus Select (Dropdown): Label naik HANYA jika sudah ada value yang dipilih (bukan placeholder) */
+  .form-group select:not([value=""]) ~ label {
     top: 6px; font-size: 10px; color: var(--merah); text-transform: uppercase; letter-spacing: 0.5px;
   }
 
@@ -347,11 +351,10 @@
       if (el && el.value && el.value.trim() !== '') filled++;
     });
     
-    // Tambahkan jika foto sudah diambil
     if (fotoData.selfie) filled++;
     if (fotoData.ktp) filled++;
 
-    const totalFields = 7; // 5 text + 2 foto
+    const totalFields = 7; 
     const percent = (filled / totalFields) * 100;
     document.getElementById('progressBar').style.width = percent + '%';
   }
@@ -435,7 +438,7 @@
     document.getElementById('text_' + modeFoto).style.color = '#16A34A';
     
     tutupKamera();
-    updateProgress(); // Update progress bar saat foto diambil
+    updateProgress();
   }
 
   async function simpanData() {
