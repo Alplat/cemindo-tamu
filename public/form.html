@@ -5,80 +5,187 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formulir Tamu - Cemindo</title>
 <style>
-  :root { --merah: #C00000; --bg-body: #F0F2F5; --bg-card: #FFFFFF; --bg-input: #FAFAFA; --border: #E2E8F0; --teks-utama: #333333; --teks-label: #475569; }
-  body.dark-mode { --bg-body: #121212; --bg-card: #1E1E1E; --bg-input: #2D2D2D; --border: #404040; --teks-utama: #F1F1F1; --teks-label: #A0A0A0; }
+  :root { 
+    --merah: #C00000; 
+    --bg-gradient: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+    --bg-glass: rgba(255, 255, 255, 0.7); 
+    --bg-input: rgba(255, 255, 255, 0.9); 
+    --border: rgba(255, 255, 255, 0.5); 
+    --teks-utama: #1E293B; 
+    --teks-label: #64748B; 
+  }
+  
+  body.dark-mode { 
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    --bg-glass: rgba(30, 30, 30, 0.7); 
+    --bg-input: rgba(0, 0, 0, 0.3); 
+    --border: rgba(255, 255, 255, 0.1); 
+    --teks-utama: #F1F1F1; 
+    --teks-label: #94A3B8; 
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-  body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); min-height: 100vh; padding: 20px; color: var(--teks-utama); transition: 0.4s; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(192, 0, 0, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(192, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(192, 0, 0, 0); } }
+
+  body { 
+    font-family: 'Segoe UI', system-ui, sans-serif; 
+    background: var(--bg-gradient); 
+    min-height: 100vh; padding: 30px 20px; color: var(--teks-utama); 
+    transition: background 0.5s ease, color 0.4s; 
+    display: flex; justify-content: center;
+  }
   
-  /* Tombol Toggle Bahasa & Tema */
+  /* Top Controls (Bahasa & Tema) */
   .top-controls { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; }
-  .btn-control { background: var(--bg-card); border: 2px solid var(--border); font-size: 14px; padding: 10px 15px; border-radius: 10px; cursor: pointer; transition: 0.3s; font-weight: bold; color: var(--teks-utama); display: flex; align-items: center; justify-content: center; }
+  .btn-control { 
+    background: var(--bg-glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border); font-size: 14px; padding: 10px 15px; border-radius: 12px; 
+    cursor: pointer; transition: 0.3s; font-weight: bold; color: var(--teks-utama); 
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  }
   .btn-control:hover { border-color: var(--merah); transform: translateY(-2px); }
   
-  .container { max-width: 550px; margin: 20px auto; background: var(--bg-card); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: slideUp 0.6s ease-out; }
-  .header-form { text-align: center; margin-bottom: 30px; }
-  .header-form img { max-width: 130px; margin-bottom: 15px; }
-  .header-form h2 { color: var(--merah); font-size: 22px; font-weight: 800; }
-  
-  .form-group { margin-bottom: 20px; }
-  label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--teks-label); }
-  input, select, textarea { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 14px; color: var(--teks-utama); transition: 0.3s; background: var(--bg-input); font-family: inherit; }
-  input:focus, select:focus, textarea:focus { border-color: var(--merah); background: var(--bg-card); outline: none; }
-  
-  select:disabled { background: #e9ecef; cursor: not-allowed; color: #999; }
-  body.dark-mode select:disabled { background: #1a1a1a; }
+  /* Container Glassmorphism */
+  .container { 
+    width: 100%; max-width: 520px; margin: 20px auto; 
+    background: var(--bg-glass); 
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    padding: 40px; border-radius: 24px; 
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); 
+    animation: slideUp 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative; overflow: hidden;
+  }
 
-  .foto-box { display: flex; gap: 15px; }
-  .foto-item { flex: 1; text-align: center; border: 2px dashed var(--border); padding: 20px; border-radius: 12px; cursor: pointer; background: var(--bg-input); }
-  .foto-item img { width: 100%; height: 120px; object-fit: cover; display: none; border-radius: 8px; margin-bottom: 10px; }
-  .foto-item span { font-size: 13px; color: var(--teks-label); font-weight: 600; display: block; }
+  /* Progress Bar di Atas Form */
+  .progress-container { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: rgba(0,0,0,0.05); }
+  .progress-bar { height: 100%; width: 0%; background: var(--merah); transition: width 0.4s ease; }
+
+  .header-form { text-align: center; margin-bottom: 35px; }
+  .header-form img { max-width: 140px; margin-bottom: 15px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1)); }
+  .header-form h2 { color: var(--merah); font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
   
-  .btn-submit { width: 100%; background: var(--merah); color: #fff; border: none; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-  .btn-submit:hover { background: #900000; }
+  /* Form & Floating Label */
+  .form-group { position: relative; margin-bottom: 25px; }
+  
+  .form-group input, .form-group select, .form-group textarea { 
+    width: 100%; padding: 22px 15px 10px 45px; 
+    border: 2px solid var(--border); border-radius: 12px; 
+    font-size: 15px; color: var(--teks-utama); 
+    transition: 0.3s ease; background: var(--bg-input); font-family: inherit;
+  }
+  
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
+    border-color: var(--merah); background: var(--bg-card); 
+    outline: none; box-shadow: 0 4px 15px rgba(192,0,0,0.1);
+  }
+  
+  /* Ikon di dalam input */
+  .input-icon {
+    position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+    font-size: 18px; color: var(--teks-label); pointer-events: none; transition: 0.3s;
+  }
+  .form-group input:focus ~ .input-icon, .form-group select:focus ~ .input-icon { color: var(--merah); }
+  /* Khusus untuk textarea, posisi ikon di atas */
+  .textarea-icon { top: 25px !important; }
+
+  /* Label Melayang (Floating Label) */
+  .form-group label { 
+    position: absolute; left: 45px; top: 16px; 
+    font-size: 14px; color: var(--teks-label); 
+    pointer-events: none; transition: 0.3s ease; font-weight: 600;
+  }
+  
+  /* Saat input di-fokus atau ada isinya, label naik ke atas */
+  .form-group input:focus ~ label, .form-group input:not(:placeholder-shown) ~ label,
+  .form-group textarea:focus ~ label, .form-group textarea:not(:placeholder-shown) ~ label,
+  .form-group select:focus ~ label, .form-group select:valid ~ label {
+    top: 6px; font-size: 10px; color: var(--merah); text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  select:disabled { background: rgba(0,0,0,0.03); cursor: not-allowed; color: #999; border-style: dashed; }
+  body.dark-mode select:disabled { background: rgba(255,255,255,0.02); }
+
+  /* Foto Section */
+  .foto-box { display: flex; gap: 15px; margin-top: 5px; }
+  .foto-item { 
+    flex: 1; text-align: center; border: 2px dashed var(--border); 
+    padding: 20px 15px; border-radius: 12px; cursor: pointer; background: var(--bg-input); 
+    transition: 0.3s;
+  }
+  .foto-item:hover { border-color: var(--merah); background: rgba(192,0,0,0.02); }
+  .foto-item img { width: 100%; height: 100px; object-fit: cover; display: none; border-radius: 8px; margin-bottom: 10px; }
+  .foto-item span { font-size: 13px; color: var(--teks-label); font-weight: 700; display: block; }
+  
+  /* Tombol Submit dengan Glow */
+  .btn-submit { 
+    width: 100%; background: var(--merah); color: #fff; border: none; 
+    padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 700; 
+    cursor: pointer; margin-top: 15px; transition: 0.3s; letter-spacing: 0.5px;
+  }
+  .btn-submit:hover:not(:disabled) { background: #A00000; transform: translateY(-2px); animation: pulseGlow 1.5s infinite; }
+  .btn-submit:disabled { background: #ccc; cursor: not-allowed; animation: none; }
+  
   .hidden { display: none !important; }
   
   /* Sukses Box */
-  .sukses-box { text-align: center; padding: 60px 20px; }
-  .sukses-icon { font-size: 90px; line-height: 1; margin-bottom: 20px; }
-  
+  .sukses-box { text-align: center; padding: 50px 20px; }
+  .sukses-icon { font-size: 90px; line-height: 1; margin-bottom: 20px; animation: slideUp 0.5s ease; }
   .btn-back { 
-    display: inline-block; background: #E2E8F0; color: #333; 
+    display: inline-block; background: var(--bg-input); color: var(--teks-utama); 
     padding: 14px 30px; border-radius: 10px; text-decoration: none; 
-    font-weight: bold; font-size: 15px; transition: 0.3s; margin-top: 15px;
-    border: 2px solid #CBD5E1;
+    font-weight: bold; font-size: 15px; transition: 0.3s; margin-top: 20px;
+    border: 2px solid var(--border);
   }
-  .btn-back:hover { background: #CBD5E1; transform: translateY(-2px); }
+  .btn-back:hover { border-color: var(--merah); color: var(--merah); transform: translateY(-2px); }
+
+  /* Modal Kamera */
+  #kameraModal { position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter: blur(5px); display:none; justify-content:center; align-items:center; z-index:999; }
+  .modal-content { background:var(--bg-card); padding:25px; border-radius:20px; text-align:center; width:90%; max-width:450px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+  .modal-content h3 { margin-bottom:15px; color:var(--merah); font-weight:800; }
+  .modal-content video { width:100%; border-radius:12px; background:#000; }
+  .modal-buttons { display:flex; gap:10px; margin-top:20px; }
+  .modal-buttons button { flex:1; padding:14px; border-radius:10px; font-weight:bold; cursor:pointer; border:none; transition:0.2s; }
+  .btn-batal { background:var(--bg-input); color:var(--teks-utama); }
+  .btn-jepret { background:var(--merah); color:#fff; }
+  .btn-jepret:hover { background:#A00000; }
 </style>
 </head>
 <body>
 
-  <!-- Tombol Kontrol (Bahasa & Tema) -->
+  <!-- Tombol Kontrol -->
   <div class="top-controls">
     <button class="btn-control" id="langBtn" onclick="toggleLanguage()">🇬🇧 EN</button>
     <button class="btn-control" id="themeBtn" onclick="toggleTheme()">🌙</button>
   </div>
 
   <div class="container" id="formContainer">
+    <!-- Progress Bar -->
+    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+
     <div class="header-form">
       <img src="/logo.png" alt="Logo Cemindo">
       <h2 id="titleText">Registrasi Tamu</h2>
     </div>
     
     <div class="form-group">
+      <span class="input-icon">👤</span>
+      <input type="text" id="nama" placeholder=" " required oninput="updateProgress()">
       <label id="lblNama">Nama Lengkap *</label>
-      <input type="text" id="nama" placeholder="Masukkan nama lengkap" required>
     </div>
+    
     <div class="form-group">
+      <span class="input-icon">🪪</span>
+      <input type="text" id="nik" placeholder=" " required oninput="updateProgress()">
       <label id="lblNik">No ID Card / NIK *</label>
-      <input type="text" id="nik" placeholder="Masukkan NIK" required>
     </div>
 
     <div class="form-group">
-      <label id="lblDept">Departemen yang Dituju *</label>
-      <select id="departemen" onchange="filterPIC()" required>
-        <option value="">-- Pilih Departemen --</option>
+      <span class="input-icon">🏢</span>
+      <select id="departemen" onchange="filterPIC(); updateProgress()" required>
+        <option value="" disabled selected hidden></option>
         <option value="HRD">HRD</option>
         <option value="Produksi">Produksi</option>
         <option value="IT">IT</option>
@@ -86,22 +193,25 @@
         <option value="Logistik">Logistik</option>
         <option value="Lainnya">Lainnya</option>
       </select>
+      <label id="lblDept">Departemen yang Dituju *</label>
     </div>
 
     <div class="form-group">
-      <label id="lblPic">PIC yang Dituju *</label>
-      <select id="pic" required disabled>
-        <option value="">-- Pilih Departemen Terlebih Dahulu --</option>
+      <span class="input-icon">🤝</span>
+      <select id="pic" required disabled onchange="updateProgress()">
+        <option value="" disabled selected hidden></option>
       </select>
+      <label id="lblPic">PIC yang Dituju *</label>
     </div>
 
     <div class="form-group">
+      <span class="input-icon textarea-icon">📝</span>
+      <textarea id="keperluan" rows="2" placeholder=" " oninput="updateProgress()"></textarea>
       <label id="lblKeperluan">Keperluan *</label>
-      <textarea id="keperluan" rows="3" placeholder="Contoh: Meeting, Interview, Kirim Barang"></textarea>
     </div>
     
-    <div class="form-group">
-      <label id="lblSelfie">Foto Selfie *</label>
+    <div class="form-group" style="margin-top: 30px;">
+      <label id="lblSelfie" style="position:static; margin-bottom:10px; display:block; font-size:14px; color:var(--teks-utama); font-weight:700;">Foto Selfie *</label>
       <div class="foto-box">
         <div class="foto-item" onclick="ambilFoto('selfie')">
           <img id="preview_selfie">
@@ -109,8 +219,9 @@
         </div>
       </div>
     </div>
+
     <div class="form-group">
-      <label id="lblKtp">Foto KTP / ID Card *</label>
+      <label id="lblKtp" style="position:static; margin-bottom:10px; display:block; font-size:14px; color:var(--teks-utama); font-weight:700;">Foto KTP / ID Card *</label>
       <div class="foto-box">
         <div class="foto-item" onclick="ambilFoto('ktp')">
           <img id="preview_ktp">
@@ -118,6 +229,7 @@
         </div>
       </div>
     </div>
+
     <button onclick="simpanData()" id="btnSimpan" class="btn-submit">Kirim Data Registrasi</button>
   </div>
 
@@ -131,20 +243,18 @@
       Silakan menunggu di resepsionis.
     </p>
     
-    <a href="/" class="btn-back" id="btnKembali">
-      ⬅️ Kembali ke Halaman Depan
-    </a>
+    <a href="/" class="btn-back" id="btnKembali">⬅️ Kembali ke Halaman Depan</a>
   </div>
 
   <!-- Modal Kamera -->
-  <div id="kameraModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:99;">
-    <div style="background:var(--bg-card); padding:20px; border-radius:20px; text-align:center; width:90%; max-width:450px;">
-      <h3 style="margin-bottom:15px; color:var(--merah);" id="titleKamera">Ambil Foto</h3>
-      <video id="video" autoplay playsinline style="width:100%; border-radius:12px; background:#000;"></video>
+  <div id="kameraModal">
+    <div class="modal-content">
+      <h3 id="titleKamera">Ambil Foto</h3>
+      <video id="video" autoplay playsinline></video>
       <canvas id="canvas" style="display:none;"></canvas>
-      <div style="display:flex; gap:10px; margin-top:20px;">
-        <button onclick="tutupKamera()" style="flex:1; background:var(--bg-input); color:var(--teks-utama); border:none; padding:14px; border-radius:10px; font-weight:bold; cursor:pointer;" id="btnBatalKamera">Batal</button>
-        <button onclick="prosesFoto()" style="flex:1; background:var(--merah); color:#fff; border:none; padding:14px; border-radius:10px; font-weight:bold; cursor:pointer;" id="btnJepret">📸 Jepret</button>
+      <div class="modal-buttons">
+        <button class="btn-batal" onclick="tutupKamera()" id="btnBatalKamera">Batal</button>
+        <button class="btn-jepret" onclick="prosesFoto()" id="btnJepret">📸 Jepret</button>
       </div>
     </div>
   </div>
@@ -155,54 +265,26 @@
 
   const translations = {
     id: {
-      langBtn: "🇬🇧 EN",
-      title: "Registrasi Tamu",
-      lblNama: "Nama Lengkap *",
-      phNama: "Masukkan nama lengkap",
-      lblNik: "No ID Card / NIK *",
-      phNik: "Masukkan NIK",
-      lblDept: "Departemen yang Dituju *",
-      optDept: "-- Pilih Departemen --",
-      lblPic: "PIC yang Dituju *",
-      optPic: "-- Pilih Departemen Terlebih Dahulu --",
-      lblKeperluan: "Keperluan *",
-      phKeperluan: "Contoh: Meeting, Interview, Kirim Barang",
-      lblSelfie: "Foto Selfie *",
-      txtSelfie: "📷 Ambil Selfie",
-      lblKtp: "Foto KTP / ID Card *",
-      txtKtp: "📷 Ambil KTP",
-      btnSubmit: "Kirim Data Registrasi",
-      btnBack: "⬅️ Kembali ke Halaman Depan",
-      suksesTitle: "Registrasi Berhasil!",
+      langBtn: "🇬🇧 EN", title: "Registrasi Tamu",
+      lblNama: "Nama Lengkap *", lblNik: "No ID Card / NIK *",
+      lblDept: "Departemen yang Dituju *", lblPic: "PIC yang Dituju *",
+      lblKeperluan: "Keperluan *", lblSelfie: "Foto Selfie *",
+      txtSelfie: "📷 Ambil Selfie", lblKtp: "Foto KTP / ID Card *",
+      txtKtp: "📷 Ambil KTP", btnSubmit: "Kirim Data Registrasi",
+      btnBack: "⬅️ Kembali ke Halaman Depan", suksesTitle: "Registrasi Berhasil!",
       suksesText: "Terima kasih. Notifikasi WA telah dikirim ke PIC. Silakan menunggu di resepsionis.",
-      titleKamera: "Ambil Foto",
-      btnBatal: "Batal",
-      btnJepret: "📸 Jepret"
+      titleKamera: "Ambil Foto", btnBatal: "Batal", btnJepret: "📸 Jepret"
     },
     en: {
-      langBtn: "🇮🇩 ID",
-      title: "Guest Registration",
-      lblNama: "Full Name *",
-      phNama: "Enter full name",
-      lblNik: "ID Card / Passport No *",
-      phNik: "Enter ID Number",
-      lblDept: "Destination Department *",
-      optDept: "-- Select Department --",
-      lblPic: "Person In Charge (PIC) *",
-      optPic: "-- Select Department First --",
-      lblKeperluan: "Purpose of Visit *",
-      phKeperluan: "Example: Meeting, Interview, Delivery",
-      lblSelfie: "Selfie Photo *",
-      txtSelfie: "📷 Take Selfie",
-      lblKtp: "ID Card / Passport Photo *",
-      txtKtp: "📷 Take ID Photo",
-      btnSubmit: "Submit Registration",
-      btnBack: "⬅️ Back to Homepage",
-      suksesTitle: "Registration Successful!",
+      langBtn: "🇮🇩 ID", title: "Guest Registration",
+      lblNama: "Full Name *", lblNik: "ID Card / Passport No *",
+      lblDept: "Destination Department *", lblPic: "Person In Charge (PIC) *",
+      lblKeperluan: "Purpose of Visit *", lblSelfie: "Selfie Photo *",
+      txtSelfie: "📷 Take Selfie", lblKtp: "ID Card / Passport Photo *",
+      txtKtp: "📷 Take ID Photo", btnSubmit: "Submit Registration",
+      btnBack: "⬅️ Back to Homepage", suksesTitle: "Registration Successful!",
       suksesText: "Thank you. WhatsApp notification has been sent to the PIC. Please wait at the receptionist.",
-      titleKamera: "Take Photo",
-      btnBatal: "Cancel",
-      btnJepret: "📸 Capture"
+      titleKamera: "Take Photo", btnBatal: "Cancel", btnJepret: "📸 Capture"
     }
   };
 
@@ -211,41 +293,31 @@
     document.getElementById('langBtn').innerText = t.langBtn;
     document.getElementById('titleText').innerText = t.title;
     document.getElementById('lblNama').innerText = t.lblNama;
-    document.getElementById('nama').placeholder = t.phNama;
     document.getElementById('lblNik').innerText = t.lblNik;
-    document.getElementById('nik').placeholder = t.phNik;
     document.getElementById('lblDept').innerText = t.lblDept;
-    document.getElementById('departemen').options[0].text = t.optDept;
-    
     document.getElementById('lblPic').innerText = t.lblPic;
-    const picSelect = document.getElementById('pic');
-    if (picSelect.disabled) {
-      picSelect.options[0].text = t.optPic;
-    } else {
-      picSelect.options[0].text = currentLang === 'id' ? "-- Pilih Karyawan --" : "-- Select Employee --";
-    }
-
     document.getElementById('lblKeperluan').innerText = t.lblKeperluan;
-    document.getElementById('keperluan').placeholder = t.phKeperluan;
     document.getElementById('lblSelfie').innerText = t.lblSelfie;
-    
-    // Jangan timpa teks "Tersimpan" jika foto sudah diambil
-    if (document.getElementById('preview_selfie').style.display !== 'block') {
-      document.getElementById('text_selfie').innerText = t.txtSelfie;
-    }
     document.getElementById('lblKtp').innerText = t.lblKtp;
-    if (document.getElementById('preview_ktp').style.display !== 'block') {
-      document.getElementById('text_ktp').innerText = t.txtKtp;
-    }
-    
     document.getElementById('btnSimpan').innerText = t.btnSubmit;
     document.getElementById('btnKembali').innerText = t.btnBack;
     document.getElementById('suksesTitle').innerText = t.suksesTitle;
     document.getElementById('suksesText').innerHTML = `${t.suksesText.split('.')[0]}.<br>${t.suksesText.split('.')[1]}.<br>${t.suksesText.split('.')[2] || ''}`;
     
+    // Khusus Foto (jika belum diambil)
+    if (document.getElementById('preview_selfie').style.display !== 'block') document.getElementById('text_selfie').innerText = t.txtSelfie;
+    if (document.getElementById('preview_ktp').style.display !== 'block') document.getElementById('text_ktp').innerText = t.txtKtp;
+
     document.getElementById('titleKamera').innerText = t.titleKamera;
     document.getElementById('btnBatalKamera').innerText = t.btnBatal;
     document.getElementById('btnJepret').innerText = t.btnJepret;
+    
+    // Teks opsi di dropdown
+    const selectDept = document.getElementById('departemen');
+    selectDept.options[0].text = currentLang === 'id' ? "-- Pilih Departemen --" : "-- Select Department --";
+    if(document.getElementById('pic').disabled) {
+        document.getElementById('pic').options[0].text = currentLang === 'id' ? "-- Pilih Departemen Terlebih Dahulu --" : "-- Select Department First --";
+    }
   }
 
   function toggleLanguage() {
@@ -266,10 +338,28 @@
     document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
   }
 
-  // --- AMBIL DATA KARYAWAN ---
+  // --- PROGRESS BAR LOGIC ---
+  function updateProgress() {
+    const inputs = ['nama', 'nik', 'departemen', 'pic', 'keperluan'];
+    let filled = 0;
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.value && el.value.trim() !== '') filled++;
+    });
+    
+    // Tambahkan jika foto sudah diambil
+    if (fotoData.selfie) filled++;
+    if (fotoData.ktp) filled++;
+
+    const totalFields = 7; // 5 text + 2 foto
+    const percent = (filled / totalFields) * 100;
+    document.getElementById('progressBar').style.width = percent + '%';
+  }
+
+  // --- DATA KARYAWAN & FILTER PIC ---
   let dataKaryawan = [];
   window.onload = async () => {
-    applyLanguage(); // Terapkan bahasa saat halaman dimuat
+    applyLanguage();
     try {
       const res = await fetch('/api/karyawan');
       dataKaryawan = await res.json();
@@ -278,22 +368,18 @@
     }
   };
 
-  // --- FILTER DEPARTEMEN KE PIC ---
   function filterPIC() {
     const deptTerpilih = document.getElementById('departemen').value;
     const selectPic = document.getElementById('pic');
-    const t = translations[currentLang];
     
-    selectPic.innerHTML = `<option value="">${currentLang === 'id' ? '-- Pilih Karyawan --' : '-- Select Employee --'}</option>`;
+    selectPic.innerHTML = `<option value="" disabled selected hidden></option>`;
     
     if (deptTerpilih) {
-      const karyawanFiltered = dataKaryawan.filter(k => k.departemen === deptTerpilih);
-      
-      if (karyawanFiltered.length > 0) {
-        karyawanFiltered.forEach(k => {
+      const filtered = dataKaryawan.filter(k => k.departemen === deptTerpilih);
+      if (filtered.length > 0) {
+        filtered.forEach(k => {
           const option = document.createElement('option');
-          option.value = k.nama;
-          option.text = k.nama;
+          option.value = k.nama; option.text = k.nama;
           selectPic.appendChild(option);
         });
         selectPic.disabled = false;
@@ -302,20 +388,20 @@
         selectPic.disabled = true;
       }
     } else {
-      selectPic.innerHTML = `<option value="">${t.optPic}</option>`;
+      selectPic.innerHTML = `<option value="">${currentLang === 'id' ? '-- Pilih Departemen Terlebih Dahulu --' : '-- Select Department First --'}</option>`;
       selectPic.disabled = true;
     }
   }
 
-  // --- LOGIKA FORM & KAMERA ---
+  // --- KAMERA & SIMPAN ---
   let fotoData = { selfie: null, ktp: null };
   let modeFoto = '';
   let stream = null;
 
   async function ambilFoto(jenis) {
     modeFoto = jenis;
-    const t = translations[currentLang];
-    document.getElementById('titleKamera').innerText = jenis === 'selfie' ? (currentLang === 'id' ? '🤳 Ambil Foto Selfie' : '🤳 Take Selfie Photo') : (currentLang === 'id' ? '🪪 Ambil Foto KTP' : '🪪 Take ID Photo');
+    const isId = currentLang === 'id';
+    document.getElementById('titleKamera').innerText = jenis === 'selfie' ? (isId ? '🤳 Ambil Foto Selfie' : '🤳 Take Selfie Photo') : (isId ? '🪪 Ambil Foto KTP' : '🪪 Take ID Photo');
     
     document.getElementById('kameraModal').style.display = 'flex';
     try {
@@ -347,11 +433,13 @@
     document.getElementById('preview_' + modeFoto).style.display = 'block';
     document.getElementById('text_' + modeFoto).innerText = currentLang === 'id' ? '✅ Tersimpan' : '✅ Saved';
     document.getElementById('text_' + modeFoto).style.color = '#16A34A';
+    
     tutupKamera();
+    updateProgress(); // Update progress bar saat foto diambil
   }
 
   async function simpanData() {
-    const t = translations[currentLang];
+    const isId = currentLang === 'id';
     const nama = document.getElementById('nama').value;
     const nik = document.getElementById('nik').value;
     const dept = document.getElementById('departemen').value;
@@ -359,15 +447,15 @@
     const keperluan = document.getElementById('keperluan').value;
 
     if (!nama || !nik || !dept || !pic || !keperluan) {
-      return alert(currentLang === 'id' ? 'Mohon lengkapi semua data teks!' : 'Please complete all text fields!');
+      return alert(isId ? 'Mohon lengkapi semua data teks!' : 'Please complete all text fields!');
     }
     if (!fotoData.selfie || !fotoData.ktp) {
-      return alert(currentLang === 'id' ? 'Mohon ambil Foto Selfie dan Foto KTP!' : 'Please take Selfie and ID Card photos!');
+      return alert(isId ? 'Mohon ambil Foto Selfie dan Foto KTP!' : 'Please take Selfie and ID Card photos!');
     }
 
     const btn = document.getElementById('btnSimpan');
     btn.disabled = true;
-    btn.innerText = currentLang === 'id' ? 'Menyimpan...' : 'Saving...';
+    btn.innerText = isId ? 'Menyimpan...' : 'Saving...';
 
     try {
       const res = await fetch('/api/simpan', {
@@ -386,12 +474,12 @@
       } else {
         alert('Gagal menyimpan data / Failed to save data.');
         btn.disabled = false;
-        btn.innerText = t.btnSubmit;
+        btn.innerText = translations[currentLang].btnSubmit;
       }
     } catch (err) {
       alert('Error: ' + err.message);
       btn.disabled = false;
-      btn.innerText = t.btnSubmit;
+      btn.innerText = translations[currentLang].btnSubmit;
     }
   }
 </script>
