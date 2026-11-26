@@ -104,7 +104,7 @@
     top: 6px; font-size: 10px; color: var(--merah); text-transform: uppercase; letter-spacing: 0.5px;
   }
 
-  /* Khusus Select (Dropdown): Label naik HANYA jika sudah ada value yang dipilih (bukan placeholder) */
+  /* Khusus Select (Dropdown): Label naik HANYA jika sudah ada value yang dipilih */
   .form-group select:not([value=""]) ~ label {
     top: 6px; font-size: 10px; color: var(--merah); text-transform: uppercase; letter-spacing: 0.5px;
   }
@@ -145,11 +145,42 @@
   }
   .btn-back:hover { border-color: var(--merah); color: var(--merah); transform: translateY(-2px); }
 
-  /* Modal Kamera */
+  /* Modal Kamera & Face Guide */
   #kameraModal { position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter: blur(5px); display:none; justify-content:center; align-items:center; z-index:999; }
   .modal-content { background:var(--bg-card); padding:25px; border-radius:20px; text-align:center; width:90%; max-width:450px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
   .modal-content h3 { margin-bottom:15px; color:var(--merah); font-weight:800; }
-  .modal-content video { width:100%; border-radius:12px; background:#000; }
+  
+  .video-container { position: relative; width: 100%; border-radius: 12px; overflow: hidden; background: #000; }
+  .modal-content video { width:100%; display:block; }
+  
+  .face-guide {
+    position: absolute; inset: 0; display: none; 
+    justify-content: center; align-items: center;
+    pointer-events: none;
+  }
+  .face-guide.active { display: flex; }
+  .face-oval {
+    width: 60%; height: 70%;
+    border: 3px dashed rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+    position: relative;
+  }
+  .face-oval::before, .face-oval::after {
+    content: ''; position: absolute; left: 10%; right: 10%;
+    height: 2px; background: rgba(0, 255, 255, 0.6);
+    animation: scan 2s linear infinite;
+  }
+  .face-oval::before { top: 0; }
+  .face-oval::after { bottom: 0; animation-direction: reverse; }
+  @keyframes scan { 0% { top: 10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 90%; opacity: 0; } }
+
+  .camera-instruction {
+    color: #fff; font-size: 13px; margin-top: 15px; 
+    text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .camera-instruction svg { width: 40px; height: 40px; stroke: #fff; }
+
   .modal-buttons { display:flex; gap:10px; margin-top:20px; }
   .modal-buttons button { flex:1; padding:14px; border-radius:10px; font-weight:bold; cursor:pointer; border:none; transition:0.2s; }
   .btn-batal { background:var(--bg-input); color:var(--teks-utama); }
@@ -241,8 +272,7 @@
     <div class="sukses-icon">✅</div>
     <h2 style="margin-bottom:10px;" id="suksesTitle">Registrasi Berhasil!</h2>
     <p style="color:var(--teks-label); line-height:1.6; margin-bottom: 25px;" id="suksesText">
-      Terima kasih <b id="namaSukses"></b>.<br>
-      Notifikasi WA telah dikirim ke PIC.<br>
+      Terima kasih. Notifikasi WA telah dikirim ke PIC.<br>
       Silakan menunggu di resepsionis.
     </p>
     
@@ -253,8 +283,26 @@
   <div id="kameraModal">
     <div class="modal-content">
       <h3 id="titleKamera">Ambil Foto</h3>
-      <video id="video" autoplay playsinline></video>
+      
+      <div class="video-container">
+        <video id="video" autoplay playsinline></video>
+        <div class="face-guide" id="faceGuide">
+          <div class="face-oval"></div>
+        </div>
+      </div>
+
+      <div class="camera-instruction" id="cameraInstruction" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+          <line x1="9" y1="9" x2="9.01" y2="9"></line>
+          <line x1="15" y1="9" x2="15.01" y2="9"></line>
+        </svg>
+        <span id="txtInstruction">Posisikan wajah Anda pada area yang telah ditandai</span>
+      </div>
+
       <canvas id="canvas" style="display:none;"></canvas>
+      
       <div class="modal-buttons">
         <button class="btn-batal" onclick="tutupKamera()" id="btnBatalKamera">Batal</button>
         <button class="btn-jepret" onclick="prosesFoto()" id="btnJepret">📸 Jepret</button>
@@ -405,6 +453,19 @@
     const isId = currentLang === 'id';
     document.getElementById('titleKamera').innerText = jenis === 'selfie' ? (isId ? '🤳 Ambil Foto Selfie' : '🤳 Take Selfie Photo') : (isId ? '🪪 Ambil Foto KTP' : '🪪 Take ID Photo');
     
+    const faceGuide = document.getElementById('faceGuide');
+    const instruction = document.getElementById('cameraInstruction');
+    const txtInstr = document.getElementById('txtInstruction');
+
+    if (jenis === 'selfie') {
+      faceGuide.classList.add('active');
+      instruction.style.display = 'flex';
+      txtInstr.innerText = isId ? 'Posisikan wajah Anda pada area yang telah ditandai' : 'Position your face within the marked area';
+    } else {
+      faceGuide.classList.remove('active');
+      instruction.style.display = 'none';
+    }
+    
     document.getElementById('kameraModal').style.display = 'flex';
     try {
       const constraints = { video: { facingMode: jenis === 'selfie' ? 'user' : 'environment' } };
@@ -470,6 +531,7 @@
       });
 
       if (res.ok) {
+        // SUDAH TIDAK ADA ERROR namaSukses DI SINI
         document.getElementById('formContainer').classList.add('hidden');
         document.getElementById('suksesContainer').classList.remove('hidden');
       } else {
